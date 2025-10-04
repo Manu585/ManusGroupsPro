@@ -2,7 +2,7 @@ package com.github.manu585.manusgroups.repo.jdbc.dao;
 
 import com.github.manu585.manusgroups.domain.GroupAssignment;
 import com.github.manu585.manusgroups.repo.jdbc.JdbcHelper;
-import com.github.manu585.manusgroups.util.General;
+import com.github.manu585.manusgroups.util.Uuids;
 import org.jetbrains.annotations.Nullable;
 
 import javax.sql.DataSource;
@@ -25,10 +25,10 @@ public class JdbcGroupAssignmentDao extends JdbcHelper implements GroupAssignmen
                 WHERE user_uuid = ?
                 LIMIT 1
                 """, rs -> new GroupAssignment(
-                        General.toUuid(rs.getBytes("user_uuid")),
+                        Uuids.toUuid(rs.getBytes("user_uuid")),
                         rs.getString("group_name"),
                         rs.getTimestamp("expires_at") == null ? null : rs.getTimestamp("expires_at").toInstant()
-        ), (Object) General.toBytes(user)).getFirst();
+        ), (Object) Uuids.toBytes(user)).getFirst();
     }
 
     @Override
@@ -39,12 +39,12 @@ public class JdbcGroupAssignmentDao extends JdbcHelper implements GroupAssignmen
                 ON DUPLICATE KEY UPDATE
                   group_name = VALUES(group_name),
                   expires_at = VALUES(expires_at)
-             """, General.toBytes(uuid), groupName, expiresAt == null ? null : Timestamp.from(expiresAt));
+             """, Uuids.toBytes(uuid), groupName, expiresAt == null ? null : Timestamp.from(expiresAt));
     }
 
     @Override
     public boolean deleteByUser(UUID user) throws SQLException {
-        return update("DELETE FROM `group_assignments` WHERE user_uuid = ?", (Object) General.toBytes(user)) > 0;
+        return update("DELETE FROM `group_assignments` WHERE user_uuid = ?", (Object) Uuids.toBytes(user)) > 0;
     }
 
     @Override
@@ -53,7 +53,7 @@ public class JdbcGroupAssignmentDao extends JdbcHelper implements GroupAssignmen
                 SELECT user_uuid
                 FROM `group_assignments`
                 WHERE group_name = ?
-                """, rs -> General.toUuid(rs.getBytes("user_uuid")), groupName);
+                """, rs -> Uuids.toUuid(rs.getBytes("user_uuid")), groupName);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class JdbcGroupAssignmentDao extends JdbcHelper implements GroupAssignmen
                 FROM `group_assignments`
                 WHERE expires_at IS NOT NULL
                 """, rs -> new GroupAssignment(
-                        General.toUuid(rs.getBytes("user_uuid")),
+                Uuids.toUuid(rs.getBytes("user_uuid")),
                         rs.getString("group_name"),
                         rs.getTimestamp("expires_at").toInstant()
         ));
