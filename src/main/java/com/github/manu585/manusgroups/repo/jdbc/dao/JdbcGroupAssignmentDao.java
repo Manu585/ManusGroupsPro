@@ -44,7 +44,7 @@ public class JdbcGroupAssignmentDao extends JdbcHelper implements GroupAssignmen
 
     @Override
     public boolean deleteByUser(UUID user) throws SQLException {
-        return update("DELETE FROM `group_assignments` WHERE user_uuid = ?", (Object) Uuids.toBytes(user)) > 0;
+        return update("DELETE FROM `group_assignments` WHERE user_uuid = (?)", (Object) Uuids.toBytes(user)) > 0;
     }
 
     @Override

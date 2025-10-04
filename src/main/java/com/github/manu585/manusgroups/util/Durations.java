@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 /**
  * Helper class that utilizes Regex to parse time correctly
  */
-public class Durations {
+public final class Durations {
     private static final Pattern TOKEN = Pattern.compile("(\\d+)([DHMSdhms])");
 
     private Durations() {}
