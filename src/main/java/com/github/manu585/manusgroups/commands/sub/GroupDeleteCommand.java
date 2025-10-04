@@ -2,23 +2,23 @@ package com.github.manu585.manusgroups.commands.sub;
 
 import com.github.manu585.manusgroups.cache.GroupCatalogCache;
 import com.github.manu585.manusgroups.commands.BaseCommand;
+import com.github.manu585.manusgroups.messaging.MessageService;
+import com.github.manu585.manusgroups.messaging.Msg;
 import com.github.manu585.manusgroups.service.GroupService;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.util.List;
 import java.util.Locale;
 
 public class GroupDeleteCommand extends BaseCommand {
-    private final YamlConfiguration lang;
+    private final MessageService messages;
     private final GroupService groupService;
     private final GroupCatalogCache catalog;
 
-    public GroupDeleteCommand(YamlConfiguration lang, GroupService groupService, GroupCatalogCache catalog) {
+    public GroupDeleteCommand(MessageService messages, GroupService groupService, GroupCatalogCache catalog) {
         super("delete");
 
-        this.lang = lang;
+        this.messages = messages;
         this.groupService = groupService;
         this.catalog = catalog;
     }
@@ -26,18 +26,18 @@ public class GroupDeleteCommand extends BaseCommand {
     @Override
     public void execute(CommandSender sender, List<String> args) {
         if (args.isEmpty()) {
-            sender.sendMessage(MiniMessage.miniMessage().deserialize(lang.getString("Usage.Delete", "Usage: /groups delete <name>")));
+            messages.send(sender, "Usage.Delete");
             return;
         }
 
         String groupName = args.getFirst();
         if (catalog.get(groupName) == null) {
-            sender.sendMessage(MiniMessage.miniMessage().deserialize(lang.getString("Group.NotFound", "Group nof found.")));
+            messages.send(sender, "Group.NotFound", Msg.str("name", groupName));
             return;
         }
 
         groupService.deleteGroupByReassigning(groupName)
-                .thenRun(() -> sender.sendMessage("Group deleted and users moved to default."));
+                .thenRun(() -> messages.send(sender, "Group.Deleted", Msg.str("name", groupName)));
     }
 
     @Override

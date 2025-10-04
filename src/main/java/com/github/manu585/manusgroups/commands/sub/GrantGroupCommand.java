@@ -2,14 +2,12 @@ package com.github.manu585.manusgroups.commands.sub;
 
 import com.github.manu585.manusgroups.cache.GroupCatalogCache;
 import com.github.manu585.manusgroups.commands.BaseCommand;
+import com.github.manu585.manusgroups.messaging.MessageService;
+import com.github.manu585.manusgroups.messaging.Msg;
 import com.github.manu585.manusgroups.service.GroupService;
 import com.github.manu585.manusgroups.util.Durations;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import java.time.Duration;
@@ -17,14 +15,14 @@ import java.util.List;
 import java.util.Locale;
 
 public class GrantGroupCommand extends BaseCommand {
-    private final YamlConfiguration lang;
+    private final MessageService messages;
     private final GroupService service;
     private final GroupCatalogCache catalog;
 
-    public GrantGroupCommand(YamlConfiguration lang, GroupService service, GroupCatalogCache catalog) {
+    public GrantGroupCommand(MessageService messages, GroupService service, GroupCatalogCache catalog) {
         super("grant");
 
-        this.lang = lang;
+        this.messages = messages;
         this.service = service;
         this.catalog = catalog;
     }
@@ -32,19 +30,19 @@ public class GrantGroupCommand extends BaseCommand {
     @Override
     public void execute(CommandSender sender, List<String> args) {
         if (args.size() < 2) {
-            sender.sendMessage(MiniMessage.miniMessage().deserialize(lang.getString("Usage.Grant", "Usage: /groups grant <player> <group> <time>")));
+            messages.send(sender, "Usage.Grant");
             return;
         }
 
         Player target = Bukkit.getPlayerExact(args.getFirst());
         if (target == null) {
-            sender.sendMessage(Component.text("Player not online.", TextColor.color(255, 0, 0)));
+            messages.send(sender, "Errors.PlayerNotOnline", Msg.str("player", args.getFirst()));
             return;
         }
 
         String groupName = args.get(1);
         if (catalog.get(groupName) == null) {
-            sender.sendMessage(MiniMessage.miniMessage().deserialize(lang.getString("Group.NotFound", "Group not found.")));
+            messages.send(sender, "Group.NotFound", Msg.str("name", groupName));
             return;
         }
 
@@ -53,14 +51,18 @@ public class GrantGroupCommand extends BaseCommand {
             try {
                 duration = Durations.parse(args.get(2));
             } catch (IllegalArgumentException e) {
-                sender.sendMessage("Shitty formatting boss");
+                messages.send(sender, "Errors.BadDuration", Msg.str("value", args.get(2)));
                 return;
             }
         }
 
-        service.setGroup(target.getUniqueId(), groupName, duration).thenRun(() -> sender.sendMessage(MiniMessage.miniMessage().deserialize(lang.getString("Assign.Granted", "Granted.")))).exceptionally(ex -> {
-            ex.printStackTrace();
-            return null;
+        Duration finalDuration = duration;
+        service.setGroup(target.getUniqueId(), groupName, duration).thenRun(() -> {
+            boolean perm = (finalDuration == null);
+            messages.send(sender, "Assign.Granted",
+                    Msg.str("player", target.getName()),
+                    Msg.str("group", groupName),
+                    Msg.permanent(perm));
         });
     }
 

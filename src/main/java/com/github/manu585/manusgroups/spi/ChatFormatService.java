@@ -7,4 +7,6 @@ public interface ChatFormatService {
      * @return Renderer used by the async Chat event
      */
     ChatRenderer renderer();
+
+    void updateFormat(String newFormat);
 }

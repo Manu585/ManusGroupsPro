@@ -25,7 +25,6 @@ public final class MainConfig extends BaseYamlConfig {
         yaml.addDefault("Default.Group.Name", "default");
         yaml.addDefault("Default.Group.Prefix", "<gray>[Default]</gray>");
         yaml.addDefault("Default.Group.Weight", 0);
-
     }
 
     public String getDefaultGroupName() {

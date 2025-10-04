@@ -8,23 +8,27 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 public class ChatFormatServiceImpl implements ChatFormatService {
     private static final MiniMessage MM = MiniMessage.miniMessage();
 
-    private final PrefixService prefixService;
-    private final String chatFormat;
+    private final AtomicReference<String> chatFormat = new AtomicReference<>();
+    private final ChatRenderer renderer;
 
-    public ChatFormatServiceImpl(final PrefixService prefixService, final String chatFormat) {
-        this.prefixService = prefixService;
-        this.chatFormat = chatFormat;
-    }
+    public ChatFormatServiceImpl(final PrefixService prefixService, final String initialFormat) {
+        this.chatFormat.set(initialFormat);
 
-    @Override
-    public ChatRenderer renderer() {
-        return (source, sourceDisplayName, message, viewer) -> {
+        renderer = (source, sourceDisplayName, message, viewer) -> {
             Component prefix = prefixService.cachedPrefix(source.getUniqueId());
+
+            String format = chatFormat.get();
+            if (format == null || format.isBlank()) {
+                format = "<prefix> <name>: <message>";
+            }
+
             return MM.deserialize(
-                    chatFormat,
+                    format,
                     TagResolver.builder()
                             .tag("prefix", Tag.inserting(prefix))
                             .tag("name", Tag.inserting(source.name()))
@@ -32,5 +36,15 @@ public class ChatFormatServiceImpl implements ChatFormatService {
                             .build()
             );
         };
+    }
+
+    @Override
+    public ChatRenderer renderer() {
+        return renderer;
+    }
+
+    @Override
+    public void updateFormat(String newFormat) {
+        this.chatFormat.set(newFormat);
     }
 }

@@ -1,14 +1,13 @@
 package com.github.manu585.manusgroups.commands;
 
+import com.github.manu585.manusgroups.ManusGroups;
 import com.github.manu585.manusgroups.cache.GroupCatalogCache;
-import com.github.manu585.manusgroups.commands.sub.GrantGroupCommand;
-import com.github.manu585.manusgroups.commands.sub.GroupCreateCommand;
-import com.github.manu585.manusgroups.commands.sub.GroupDeleteCommand;
-import com.github.manu585.manusgroups.commands.sub.RevokeGroupCommand;
+import com.github.manu585.manusgroups.commands.sub.*;
+import com.github.manu585.manusgroups.messaging.MessageService;
+import com.github.manu585.manusgroups.repo.GroupRepository;
 import com.github.manu585.manusgroups.service.GroupService;
+import com.github.manu585.manusgroups.spi.ChatFormatService;
 import org.bukkit.command.*;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,12 +16,16 @@ import java.util.*;
 public class Commands implements CommandExecutor, TabCompleter {
     private final Map<String, BaseCommand> commands = new HashMap<>();
 
-    public Commands(JavaPlugin plugin, YamlConfiguration lang, GroupService service, GroupCatalogCache groupCatalog) {
-        register(new GrantGroupCommand(lang, service, groupCatalog));
-        register(new RevokeGroupCommand(lang, service));
+    public Commands(ManusGroups plugin, MessageService messageService, GroupService service, GroupRepository repository, GroupCatalogCache groupCatalog, ChatFormatService chatFormatService) {
+        register(new GrantGroupCommand(messageService, service, groupCatalog));
+        register(new RevokeGroupCommand(messageService, service));
 
-        register(new GroupCreateCommand(lang, service, groupCatalog));
-        register(new GroupDeleteCommand(lang, service, groupCatalog));
+        register(new GroupCreateCommand(messageService, service));
+        register(new GroupDeleteCommand(messageService, service, groupCatalog));
+
+        register(new GroupInfoCommand(messageService, repository));
+
+        register(new ReloadCommand(plugin, messageService, chatFormatService));
 
         final PluginCommand groupCommand = plugin.getCommand("groups");
         if (groupCommand == null) return;

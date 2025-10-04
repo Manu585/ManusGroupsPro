@@ -13,6 +13,7 @@ import com.github.manu585.manusgroups.imp.PrefixServiceImpl;
 import com.github.manu585.manusgroups.listeners.ChatListener;
 import com.github.manu585.manusgroups.listeners.GroupChangeListener;
 import com.github.manu585.manusgroups.listeners.JoinQuitListener;
+import com.github.manu585.manusgroups.messaging.MessageService;
 import com.github.manu585.manusgroups.repo.Database;
 import com.github.manu585.manusgroups.repo.DbExecutor;
 import com.github.manu585.manusgroups.repo.GroupRepository;
@@ -44,6 +45,8 @@ public class ManusGroups extends JavaPlugin {
     private GroupService groupService;
     private PrefixServiceImpl prefixService;
     private ChatFormatServiceImpl chatFormatService;
+
+    private MessageService messageService;
 
     private Commands commands;
 
@@ -145,8 +148,10 @@ public class ManusGroups extends JavaPlugin {
                 new ChatListener(chatFormatService)
         );
 
+        messageService = new MessageService(configManager.getLanguageConfig().yaml());
+
         // Register Commands
-        commands = new Commands(this, configManager.getLanguageConfig().yaml(), groupService, groupCatalogCache);
+        commands = new Commands(this, messageService, groupService, groupRepository, groupCatalogCache, chatFormatService);
 
 
         // Prime online players that joined before initCore process finished (async)
@@ -201,6 +206,10 @@ public class ManusGroups extends JavaPlugin {
 
     public ChatFormatServiceImpl getChatFormatService() {
         return chatFormatService;
+    }
+
+    public MessageService getMessageService() {
+        return messageService;
     }
 
     public Commands getCommands() {

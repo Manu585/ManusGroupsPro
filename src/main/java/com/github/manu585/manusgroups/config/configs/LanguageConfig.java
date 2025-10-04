@@ -18,27 +18,37 @@ public final class LanguageConfig extends BaseYamlConfig {
     public void fill() {
         yaml.addDefault("Chat.Format", "<prefix> <name>: <message>");
 
-        // Generic
-        yaml.addDefault("Err.NotPlayer", "<red>This command can only be used by players.</red>");
-        yaml.addDefault("Err.BadNumber", "<red><value></red> is not a number.");
-        yaml.addDefault("Err.Usage", "<yellow>Usage:</yellow> <usage>");
+        // Usage strings
+        yaml.addDefault("Usage.Grant",  "<gray>Usage:</gray> <yellow>/groups grant <player> <group> [time]</yellow>");
+        yaml.addDefault("Usage.Revoke", "<gray>Usage:</gray> <yellow>/groups revoke <player></yellow>");
+        yaml.addDefault("Usage.Create", "<gray>Usage:</gray> <yellow>/groups create <name> <weight> <prefix></yellow>");
+        yaml.addDefault("Usage.Delete", "<gray>Usage:</gray> <yellow>/groups delete <name></yellow>");
+        yaml.addDefault("Usage.Info",   "<gray>Usage:</gray> <yellow>/groups info [player]</yellow>");
+        yaml.addDefault("Usage.Reload", "<gray>Usage:</gray> <yellow>/groups reload</yellow>");
 
         // Groups
-        yaml.addDefault("Group.Created", "<green>Group <name> saved.</green>");
-        yaml.addDefault("Group.Deleted", "<green>Group <name> deleted.</green>");
-        yaml.addDefault("Group.Exists", "<yellow>Group <name> already exists.</yellow>");
-        yaml.addDefault("Group.NotFound", "<red>Group <name> not found.</red>");
+        yaml.addDefault("Group.CreatedOrUpdated", "<green>Group <white><name></white> saved.</green>");
+        yaml.addDefault("Group.Deleted",          "<green>Group <white><name></white> deleted; users moved to default.</green>");
+        yaml.addDefault("Group.Exists",           "<yellow>Group <white><name></white> already exists.</yellow>");
+        yaml.addDefault("Group.NotFound",         "<red>Group <white><name></white> not found.</red>");
 
         // Assignments
-        yaml.addDefault("Assign.Granted", "<green>Granted <group> to <player><extra>.</green>");
-        yaml.addDefault("Assign.Revoked", "<green>Revoked <group> from <player>.</green>");
-        yaml.addDefault("Assign.Duration.Format", " for <duration>");
+        yaml.addDefault("Assign.Granted", "<green>Granted <white><player></white> group <white><group></white><permanent>.</green>");
+        yaml.addDefault("Assign.Revoked", "<yellow>Revoked group <white><group></white> from <white><player></white>.</yellow>");
 
-        // Usage strings
-        yaml.addDefault("Usage.Create", "/groups create <name> <weight> <prefix...>");
-        yaml.addDefault("Usage.Delete", "/groups delete <name>");
-        yaml.addDefault("Usage.Grant",  "/groups grant <player> <group> [7d|3h|30m]");
-        yaml.addDefault("Usage.Revoke", "/groups revoke <player> <group>");
+        // Info
+        yaml.addDefault("Info.Self",  "<gray>Your group:</gray> <white><group></white> <gray>(</gray><remaining><gray>)</gray>");
+        yaml.addDefault("Info.Other", "<white><player></white>'s group: <white><group></white> <gray>(</gray><remaining><gray>)</gray>");
+        yaml.addDefault("Info.None",  "<yellow>No group assignment found; default applies.</yellow>");
+
+        // Reload
+        yaml.addDefault("Reload.OK",    "<green>Configuration reloaded.</green>");
+        yaml.addDefault("Reload.Error", "<red>Reload failed:</red> <error>");
+
+        // Errors
+        yaml.addDefault("Errors.PlayerNotOnline", "<red>Player <white><player></white> is not online.</red>");
+        yaml.addDefault("Errors.BadNumber",       "<red>Invalid number:</red> <value>");
+        yaml.addDefault("Errors.BadDuration",     "<red>Invalid duration:</red> <value>");
     }
 
     public String getChatFormat() {
