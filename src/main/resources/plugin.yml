@@ -8,14 +8,11 @@ website: ${organization.url}
 api-version: 1.21
 
 commands:
-  friends:
-    description: Friend base command
-    permission: friends.master
+  groups:
+    description: Group base command
+    permission: groups.use
     permission-message: You do not have permission to execute this command!
-    usage: /friends
-    aliases:
-      - f
-      - fr
+    usage: /groups
 
 libraries:
   - com.zaxxer:HikariCP:7.0.2

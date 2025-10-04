@@ -1,9 +1,9 @@
-package com.github.manu585.manusgroups.database;
+package com.github.manu585.manusgroups.repo;
 
-import com.github.manu585.manusgroups.ManusGroups;
 import com.github.manu585.manusgroups.util.General;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -11,12 +11,12 @@ import java.sql.Statement;
 import java.util.concurrent.CompletableFuture;
 
 public final class Database implements AutoCloseable {
-    private final ManusGroups plugin;
+    private final JavaPlugin plugin;
     private final DbExecutor executor;
 
     private HikariDataSource hikariDataSource;
 
-    public Database(final ManusGroups plugin, final DbExecutor executor) {
+    public Database(final JavaPlugin plugin, final DbExecutor executor) {
         this.plugin = plugin;
         this.executor = executor;
     }
@@ -64,7 +64,7 @@ public final class Database implements AutoCloseable {
                           `name` VARCHAR(36) NOT NULL,
                           `prefix` VARCHAR(36) NOT NULL,
                           `weight` INT NOT NULL,
-                          `is_default` TINYINT(1) NOT NULL DEFAULT 0
+                          `is_default` TINYINT(1) NOT NULL DEFAULT 0,
                           PRIMARY KEY (`name`),
                           INDEX `idx_groups_weight` (`weight` DESC)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
@@ -73,16 +73,16 @@ public final class Database implements AutoCloseable {
                 // GROUP ASSIGNMENTS
                 statement.execute("""
                         CREATE TABLE IF NOT EXISTS `group_assignments` (
-                          `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
                           `user_uuid` BINARY(16) NOT NULL,
                           `group_name` VARCHAR(36) NOT NULL,
                           `expires_at` DATETIME(3) NULL DEFAULT NULL,
-                          PRIMARY KEY (`id`),
-                          UNIQUE KEY `uniq_user_group` (`user_uuid`, `group_name`),
-                          KEY `idx_assign_user` (`user_uuid`),
+                          PRIMARY KEY (`user_uuid`),
                           KEY `idx_assign_expiry` (`expires_at`),
                           CONSTRAINT `fk_assign_user`
                             FOREIGN KEY (`user_uuid`) REFERENCES `users` (`uuid`)
+                            ON DELETE CASCADE,
+                          CONSTRAINT `fk_assign_group`
+                            FOREIGN KEY (`group_name`) REFERENCES `groups` (`name`)
                             ON DELETE RESTRICT
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
                         """);
@@ -119,5 +119,9 @@ public final class Database implements AutoCloseable {
             this.hikariDataSource.close();
             this.hikariDataSource = null;
         }
+    }
+
+    public HikariDataSource getHikariDataSource() {
+        return hikariDataSource;
     }
 }

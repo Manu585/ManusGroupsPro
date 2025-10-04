@@ -12,15 +12,14 @@ public final class General {
         plugin.getServer().getScheduler().runTask(plugin, r);
     }
 
-    public static byte[] uuidToBytes(final UUID uuid) {
+    public static byte[] toBytes(UUID uuid) {
         ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());
         return bb.array();
     }
 
-    public static UUID bytesToUuid(final byte[] bytes) {
-        if (bytes == null || bytes.length != 16) throw new IllegalStateException("UUID byte[] must be length 16!");
+    public static UUID toUuid(byte[] bytes) {
         ByteBuffer bb = ByteBuffer.wrap(bytes);
         long msb = bb.getLong();
         long lsb = bb.getLong();

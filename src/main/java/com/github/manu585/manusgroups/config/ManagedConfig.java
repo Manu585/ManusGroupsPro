@@ -1,6 +1,6 @@
-package com.github.manu585.manusgroups.configuration;
+package com.github.manu585.manusgroups.config;
 
-import com.github.manu585.manusgroups.database.DbExecutor;
+import com.github.manu585.manusgroups.repo.DbExecutor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;

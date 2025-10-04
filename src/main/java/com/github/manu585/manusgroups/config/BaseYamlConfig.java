@@ -1,7 +1,7 @@
-package com.github.manu585.manusgroups.configuration;
+package com.github.manu585.manusgroups.config;
 
 import com.github.manu585.manusgroups.ManusGroups;
-import com.github.manu585.manusgroups.database.DbExecutor;
+import com.github.manu585.manusgroups.repo.DbExecutor;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 
@@ -92,5 +92,9 @@ public abstract class BaseYamlConfig implements ManagedConfig {
         yaml.options().copyDefaults(true);
         fill();
         save();
+    }
+
+    public YamlConfiguration yaml() {
+        return yaml;
     }
 }

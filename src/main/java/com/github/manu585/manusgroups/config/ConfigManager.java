@@ -1,9 +1,9 @@
-package com.github.manu585.manusgroups.configuration;
+package com.github.manu585.manusgroups.config;
 
 import com.github.manu585.manusgroups.ManusGroups;
-import com.github.manu585.manusgroups.configuration.configs.LanguageConfig;
-import com.github.manu585.manusgroups.configuration.configs.MainConfig;
-import com.github.manu585.manusgroups.database.DbExecutor;
+import com.github.manu585.manusgroups.config.configs.LanguageConfig;
+import com.github.manu585.manusgroups.config.configs.MainConfig;
+import com.github.manu585.manusgroups.repo.DbExecutor;
 
 import java.util.ArrayList;
 import java.util.List;

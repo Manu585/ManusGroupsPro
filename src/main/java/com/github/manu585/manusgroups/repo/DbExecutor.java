@@ -1,4 +1,4 @@
-package com.github.manu585.manusgroups.database;
+package com.github.manu585.manusgroups.repo;
 
 import java.util.concurrent.*;
 
@@ -47,9 +47,8 @@ public final class DbExecutor {
                 service.shutdownNow();
             }
         } catch (InterruptedException ignored) {
-            Thread.currentThread().interrupt();
-        } finally {
             service.shutdownNow();
+            Thread.currentThread().interrupt();
         }
     }
 }
