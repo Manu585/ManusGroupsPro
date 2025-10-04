@@ -14,6 +14,6 @@ public class JdbcUserDao extends JdbcHelper implements UserDao {
 
     @Override
     public void insertIgnore(UUID uuid) throws SQLException {
-        update("INSERT IGNORE INTO `users` (uuid) VALUES ?", (Object) Uuids.toBytes(uuid));
+        update("INSERT IGNORE INTO `users` (uuid) VALUES (?)", (Object) Uuids.toBytes(uuid));
     }
 }
