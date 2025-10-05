@@ -45,10 +45,6 @@ public class MessageService {
         sender.sendMessage(formatToComponent(key, placeholders));
     }
 
-    public void sendWithResolvers(CommandSender sender, String key, TagResolver... resolvers) {
-        sender.sendMessage(render(key, resolvers));
-    }
-
     public MiniMessage mm() {
         return MM;
     }

@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
  * Async Wrapper for DB executions using own Executor Service
  */
 public class JdbcGroupRepository implements GroupRepository {
-    private final UserDao users;
+    private final GroupUserDao users;
     private final GroupDao groups;
     private final GroupAssignmentDao assignments;
     private final GroupPermissionDao permissions;
@@ -26,7 +26,7 @@ public class JdbcGroupRepository implements GroupRepository {
 
     private final DbExecutor executor;
 
-    public JdbcGroupRepository(UserDao users, GroupDao groups, GroupAssignmentDao assignment, GroupPermissionDao permissions, GroupSignDao signs, DbExecutor executor) {
+    public JdbcGroupRepository(GroupUserDao users, GroupDao groups, GroupAssignmentDao assignment, GroupPermissionDao permissions, GroupSignDao signs, DbExecutor executor) {
         this.users = users;
         this.groups = groups;
         this.assignments = assignment;
@@ -37,189 +37,119 @@ public class JdbcGroupRepository implements GroupRepository {
 
     @Override
     public CompletableFuture<List<Group>> listGroups() {
-        return executor.supply(() -> {
-            try {
-                return groups.listAll();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return supply(groups::listAll);
     }
 
     @Override
     public CompletableFuture<Void> upsertGroup(Group group) {
-        return executor.run(() -> {
-            try {
-                groups.upsert(group);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return run(() -> groups.upsert(group));
     }
 
     @Override
     public CompletableFuture<Boolean> deleteGroup(String groupName) {
-        return executor.supply(() -> {
-            try {
-                return groups.delete(groupName);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return supply(() -> groups.delete(groupName));
     }
 
     @Override
     public CompletableFuture<GroupAssignment> findAssignment(UUID user) {
-        return executor.supply(() -> {
-            try {
-                return assignments.findByUser(user);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return supply(() -> assignments.findByUser(user));
     }
 
     @Override
     public CompletableFuture<Void> upsertAssignment(UUID user, String group, @Nullable Instant expiresAt) {
-        return executor.run(() -> {
-            try {
-                users.insertIgnore(user);
-                assignments.upsert(user, group, expiresAt);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+        return run(() -> {
+            users.insertIgnore(user);
+            assignments.upsert(user, group, expiresAt);
         });
     }
 
     @Override
     public CompletableFuture<Boolean> deleteAssignment(UUID user) {
-        return executor.supply(() -> {
-            try {
-                return assignments.deleteByUser(user);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return supply(() -> assignments.deleteByUser(user));
     }
 
     @Override
     public CompletableFuture<List<UUID>> listUsersByGroup(String groupName) {
-        return executor.supply(() -> {
-            try {
-                return assignments.listUsersByGroup(groupName);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return supply(() -> assignments.listUsersByGroup(groupName));
     }
 
     @Override
     public CompletableFuture<List<GroupAssignment>> listAllWithExpiry() {
-        return executor.supply(() -> {
-            try {
-                return assignments.listAllWithExpiry();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return supply(assignments::listAllWithExpiry);
     }
 
     @Override
     public CompletableFuture<Map<String, Boolean>> listPermissionsByGroup(String groupName) {
-        return executor.supply(() -> {
-            try {
-                return permissions.listByGroup(groupName);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return supply(() -> permissions.listByGroup(groupName));
     }
 
     @Override
     public CompletableFuture<Void> upsertPermission(String groupName, String node, boolean value) {
-        return executor.run(() -> {
-            try {
-                permissions.upsert(groupName, node, value);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return run(() -> permissions.upsert(groupName, node, value));
     }
 
     @Override
     public CompletableFuture<Boolean> deletePermission(String groupName, String node) {
-        return executor.supply(() -> {
-            try {
-                return permissions.delete(groupName, node);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return supply(() -> permissions.delete(groupName, node));
     }
 
     @Override
     public CompletableFuture<Void> upsertSign(String world, int x, int y, int z, UUID target) {
-        return executor.run(() -> {
-            try {
-                signs.upsert(world, x, y, z, target);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return run(() -> signs.upsert(world, x, y, z, target));
     }
 
     @Override
     public CompletableFuture<Boolean> deleteSignAt(String world, int x, int y, int z) {
-        return executor.supply(() -> {
-            try {
-                return signs.deleteAt(world, x, y, z);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return supply(() -> signs.deleteAt(world, x, y, z));
     }
 
     @Override
     public CompletableFuture<Integer> deleteSignsByTarget(UUID target) {
-        return executor.supply(() -> {
-            try {
-                return signs.deleteByTarget(target);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return supply(() -> signs.deleteByTarget(target));
     }
 
     @Override
     public CompletableFuture<@Nullable SignRecord> findSignAt(String world, int x, int y, int z) {
-        return executor.supply(() -> {
-            try {
-                return signs.findAt(world, x, y, z);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return supply(() -> signs.findAt(world, x, y, z));
     }
 
     @Override
     public CompletableFuture<List<SignRecord>> listSignsByTarget(UUID target) {
+        return supply(() -> signs.listByTarget(target));
+    }
+
+    @Override
+    public CompletableFuture<List<SignRecord>> listAllSigns() {
+        return supply(signs::listAll);
+    }
+
+    private <T> CompletableFuture<T> supply(DbCallable<T> task) {
         return executor.supply(() -> {
             try {
-                return signs.listByTarget(target);
+                return task.call();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
     }
 
-    @Override
-    public CompletableFuture<List<SignRecord>> listAllSigns() {
-        return executor.supply(() -> {
+    private CompletableFuture<Void> run(DbRunnable task) {
+        return executor.run(() -> {
             try {
-                return signs.listAll();
+                task.run();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    @FunctionalInterface
+    private interface DbCallable<T> {
+        T call() throws Exception;
+    }
+
+    @FunctionalInterface
+    private interface DbRunnable {
+        void run() throws Exception;
     }
 }

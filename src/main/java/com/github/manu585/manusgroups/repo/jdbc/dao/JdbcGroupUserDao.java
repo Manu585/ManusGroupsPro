@@ -7,8 +7,8 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.UUID;
 
-public class JdbcUserDao extends JdbcHelper implements UserDao {
-    public JdbcUserDao(DataSource dataSource) {
+public class JdbcGroupUserDao extends JdbcHelper implements GroupUserDao {
+    public JdbcGroupUserDao(DataSource dataSource) {
         super(dataSource);
     }
 

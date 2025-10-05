@@ -93,7 +93,7 @@ public class ManusGroups extends JavaPlugin {
         DataSource dataSource = database.getHikariDataSource();
 
         // Data Access Objects
-        JdbcUserDao userDao = new JdbcUserDao(dataSource);
+        JdbcGroupUserDao userDao = new JdbcGroupUserDao(dataSource);
         JdbcGroupDao groupDao = new JdbcGroupDao(dataSource);
         JdbcGroupAssignmentDao assignmentDao = new JdbcGroupAssignmentDao(dataSource);
         JdbcGroupPermissionDao permissionDao = new JdbcGroupPermissionDao(dataSource);

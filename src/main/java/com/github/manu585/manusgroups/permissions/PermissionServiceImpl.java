@@ -5,13 +5,11 @@ import com.github.manu585.manusgroups.cache.GroupPlayerCache;
 import com.github.manu585.manusgroups.domain.GroupPlayer;
 import com.github.manu585.manusgroups.util.General;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -76,19 +74,28 @@ public class PermissionServiceImpl implements PermissionService {
         });
     }
 
-    private void applyNow(UUID user, Map<String, Boolean> nodes) {
+    private void applyNow(UUID user, Map<String, Boolean> rawNodes) {
         Player player = plugin.getServer().getPlayer(user);
         if (player == null || !player.isOnline()) {
             attachments.remove(user);
             return;
         }
 
-        PermissionAttachment attachment = attachments.computeIfAbsent(user, __ -> player.addAttachment(plugin));
+        final Set<String> registered = new HashSet<>();
 
+        for (final Permission permission : plugin.getServer().getPluginManager().getPermissions()) {
+            registered.add(permission.getName());
+        }
+
+        final Map<String, Boolean> nodes = PermissionExpander.expand(rawNodes, registered);
+        final PermissionAttachment attachment = attachments.computeIfAbsent(user, __ -> player.addAttachment(plugin));
+
+        // Clear old permissions
         for (String old : new ArrayList<>(attachment.getPermissions().keySet())) {
             attachment.unsetPermission(old);
         }
 
+        // Apply new ones
         nodes.forEach(attachment::setPermission);
 
         player.recalculatePermissions();
