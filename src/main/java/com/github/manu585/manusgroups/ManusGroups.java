@@ -31,6 +31,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import javax.sql.DataSource;
 
@@ -61,69 +62,108 @@ public class ManusGroups extends JavaPlugin {
     @Override
     public void onEnable() {
         getLogger().info("Booting up ManusGroupsPro...");
+        bootAsync();
+    }
 
-        // Configuration Management
+    @Override
+    public void onDisable() {
+        shutdown();
+    }
+
+    /* ===============
+     * Boot Sequence
+     * =============== */
+
+    private void bootAsync() {
+        // Config and Executor Thread Pool instantiation
         configManager = new ConfigManager(this);
-
-        // Executor Thread Pool
         executorService = new DbExecutor();
 
-        // Async IO -> DB Initiation -> DB Migration -> init Core functionality (Main Thread)
+        // Async: load configs -> init Database -> migrate Database -> init core on main thread
         configManager.prepareAllAsync(executorService)
                 .thenRun(() -> database = new Database(this, executorService))
-                .thenRun(() -> database.init(
-                    configManager.getMainConfig().dbHost(),
-                    configManager.getMainConfig().dbPort(),
-                    configManager.getMainConfig().dbName(),
-                    configManager.getMainConfig().dbUser(),
-                    configManager.getMainConfig().dbPass()
-                ))
+                .thenRun(this::initDatabaseFromConfig)
                 .thenCompose(__ -> database.migrateAsync())
                 .thenRun(() -> General.runSync(this, this::initCore))
-                .exceptionally(ex -> {
+
+                // EXCEPTION HANDLING
+                .exceptionally(exception -> {
                     General.runSync(this, () -> {
-                        getLogger().severe("Boot process of ManusGroupsPro failed! " + ex);
+                        getLogger().severe("Boot process of " + getName() + " failed!" + exception);
                         getServer().getPluginManager().disablePlugin(this);
                     });
                     return null;
                 });
     }
 
+    /**
+     * Init Database with credentials from Configuration
+     */
+    private void initDatabaseFromConfig() {
+        database.init(
+                configManager.getMainConfig().dbHost(),
+                configManager.getMainConfig().dbPort(),
+                configManager.getMainConfig().dbName(),
+                configManager.getMainConfig().dbUser(),
+                configManager.getMainConfig().dbPass()
+        );
+    }
+
     private void initCore() {
-        DataSource dataSource = database.getHikariDataSource();
+        // DAOs & Repository Instantiation
+        createRepository(database.getHikariDataSource());
 
-        // Data Access Objects
-        JdbcGroupUserDao userDao = new JdbcGroupUserDao(dataSource);
-        JdbcGroupDao groupDao = new JdbcGroupDao(dataSource);
-        JdbcGroupAssignmentDao assignmentDao = new JdbcGroupAssignmentDao(dataSource);
-        JdbcGroupPermissionDao permissionDao = new JdbcGroupPermissionDao(dataSource);
-        JdbcGroupSignDao signDao = new JdbcGroupSignDao(dataSource);
+        // Build and init default group
+        final Group defaultGroup = buildDefaultGroup();
+        DefaultGroup.initialize(defaultGroup);
 
-        // Data Repository
-        groupRepository = new JdbcGroupRepository(userDao, groupDao, assignmentDao, permissionDao, signDao, executorService);
+        // Cache Instantiation
+        initCaches();
 
-        // Default group "provider"
-        Group defaultGroup = new Group(
+        // Finish
+        warmCachesAndFinish(defaultGroup);
+    }
+
+    private void createRepository(final DataSource dataSource) {
+        final JdbcGroupUserDao groupUserDao = new JdbcGroupUserDao(dataSource);
+        final JdbcGroupDao groupDao = new JdbcGroupDao(dataSource);
+        final JdbcGroupAssignmentDao groupAssignmentDao = new JdbcGroupAssignmentDao(dataSource);
+        final JdbcGroupPermissionDao groupPermissionDao = new JdbcGroupPermissionDao(dataSource);
+        final JdbcGroupSignDao groupSignDao = new JdbcGroupSignDao(dataSource);
+
+        groupRepository = new JdbcGroupRepository(
+                groupUserDao,
+                groupDao,
+                groupAssignmentDao,
+                groupPermissionDao,
+                groupSignDao,
+                executorService
+        );
+    }
+
+    private Group buildDefaultGroup() {
+        return new Group(
                 configManager.getMainConfig().getDefaultGroupName(),
                 configManager.getMainConfig().getDefaultGroupPrefix(),
                 configManager.getMainConfig().getDefaultGroupWeight(),
-                true);
+                true
+        );
+    }
 
-        DefaultGroup.initialize(defaultGroup);
-
-        // Caches
+    private void initCaches() {
         groupCatalogCache = new GroupCatalogCache(groupRepository);
         groupPlayerCache = new GroupPlayerCache(groupRepository, groupCatalogCache);
         groupPermissionCache = new GroupPermissionCache(groupRepository);
+    }
 
-        // Ensure Default group exists
+    private void warmCachesAndFinish(Group defaultGroup) {
         groupRepository.upsertGroup(defaultGroup)
                 // Put all Groups from DB into Cache
                 .thenCompose(__ -> groupCatalogCache.warmAll())
                 .thenCompose(__ -> groupPermissionCache.warmAll(groupCatalogCache.snapshot().keySet()))
-                // Finish Initiation
                 .thenRun(() -> General.runSync(this, this::finishInit))
 
+                // EXCEPTION HANDLING
                 .exceptionally(ex -> {
                     General.runSync(this, () -> {
                         getLogger().severe("Default group / group warming failed! " + ex);
@@ -134,19 +174,28 @@ public class ManusGroups extends JavaPlugin {
     }
 
     private void finishInit() {
-        // Register Scheduler
-        expiryScheduler = new ExpiryQueue();
-
-        // Register Services
+        // Services
         messageService = new MessageService(configManager.getLanguageConfig().yaml());
-
         prefixService = new PrefixServiceImpl(this, groupPlayerCache);
         chatFormatService = new ChatFormatServiceImpl(prefixService, configManager.getLanguageConfig().getChatFormat());
         permissionService = new PermissionServiceImpl(this, groupPermissionCache, groupPlayerCache);
         signService = new GroupSignServiceImpl(this, groupRepository, groupPlayerCache, messageService);
 
-        groupService = new GroupService(this, groupRepository, groupCatalogCache, groupPlayerCache, prefixService, permissionService, signService, expiryScheduler);
+        // Register Temp Group Scheduler
+        expiryScheduler = new ExpiryQueue();
 
+        groupService = new GroupService(
+                this,
+                groupRepository,
+                groupCatalogCache,
+                groupPlayerCache,
+                prefixService,
+                permissionService,
+                signService,
+                expiryScheduler
+        );
+
+        // Expiry handling
         expiryScheduler.registerListener(uuid -> groupService.clearToDefault(uuid).thenRun(() -> signService.refreshFor(uuid)));
 
         groupRepository.listAllWithExpiry()
@@ -158,18 +207,31 @@ public class ManusGroups extends JavaPlugin {
                     return null;
                 });
 
-        // Register Listeners
+        // Listeners and Commands
         registerListeners(
                 new JoinQuitListener(this, groupService, prefixService, permissionService),
                 new GroupChangeListener(prefixService),
                 new ChatListener(chatFormatService)
         );
 
-        // Register Commands
-        commands = new Commands(this, messageService, groupService, groupRepository, groupCatalogCache, groupPermissionCache, permissionService, signService);
+        commands = new Commands(
+                this,
+                messageService,
+                groupService,
+                groupRepository,
+                groupCatalogCache,
+                groupPermissionCache,
+                permissionService,
+                signService
+        );
 
+        // Prime players already online
+        primeOnlinePlayers();
 
-        // Prime online players that joined before initCore process finished (async)
+        getLogger().info("ManusGroupsPro initialized.");
+    }
+
+    private void primeOnlinePlayers() {
         for (Player player : getServer().getOnlinePlayers()) {
             groupService.ensureDefaultPersisted(player.getUniqueId())
                     .thenCompose(__ -> groupService.load(player.getUniqueId()))
@@ -177,18 +239,45 @@ public class ManusGroups extends JavaPlugin {
                     .thenCompose(__ -> permissionService.refreshFor(player.getUniqueId()))
                     .thenRun(() -> General.runSync(this, () -> prefixService.refreshDisplayName(player)));
         }
-
-        getLogger().info("ManusGroupsPro initialized.");
     }
 
-    private void registerListeners(Listener... listeners) {
-        for (Listener listener : listeners) {
-            this.getServer().getPluginManager().registerEvents(listener, this);
-        }
+    /* ===========
+     * Reload
+     * =========== */
+
+    public void reloadAsync(final CommandSender initiator) {
+        getServer().getScheduler().runTaskAsynchronously(this, () -> {
+            try {
+                // Reload language.yml and rewire MessageService with possibly new values
+                configManager.getLanguageConfig().reload();
+                messageService.reload(configManager.getLanguageConfig().yaml());
+
+                // Update chat format
+                chatFormatService.updateFormat(configManager.getLanguageConfig().getChatFormat());
+
+                // Refresh Default group
+                configManager.getMainConfig().reload();
+                final Group newDefault = buildDefaultGroup();
+                DefaultGroup.set(newDefault);
+
+                // Persist new Default group and re-warm cache
+                groupRepository.upsertGroup(newDefault).thenCompose(__ -> groupCatalogCache.warmAll()).join();
+
+                // re-prime online users
+                primeOnlinePlayers();
+
+                messageService.send(initiator, "Reload.OK");
+            } catch (Exception e) {
+                messageService.send(initiator, "Reload.Error", Msg.str("error", e.getMessage() == null ? "unknown" : e.getMessage()));
+            }
+        });
     }
 
-    @Override
-    public void onDisable() {
+    /* ===========
+     * Shutdown
+     * =========== */
+
+    private void shutdown() {
         if (executorService != null) {
             executorService.shutDown();
         }
@@ -204,49 +293,10 @@ public class ManusGroups extends JavaPlugin {
         HandlerList.unregisterAll();
     }
 
-    public void reloadAsync(CommandSender initiator) {
-        getServer().getScheduler().runTaskAsynchronously(this, () -> {
-            try {
-                // Reload language.yml and rewire MessageService with possibly new values
-                getConfigManager().getLanguageConfig().reload();
-                messageService.reload(getConfigManager().getLanguageConfig().yaml());
-
-                // Update chat format
-                final String newFormat = getConfigManager().getLanguageConfig().getChatFormat();
-                chatFormatService.updateFormat(newFormat);
-
-                // Refresh Defaultgroup values
-                getConfigManager().getMainConfig().reload();
-                final Group newDefault = new Group(
-                        getConfigManager().getMainConfig().getDefaultGroupName(),
-                        getConfigManager().getMainConfig().getDefaultGroupPrefix(),
-                        getConfigManager().getMainConfig().getDefaultGroupWeight(),
-                        true
-                );
-                DefaultGroup.set(newDefault);
-
-                // Persist new defaultgroup and also re-warm cache
-                groupRepository.upsertGroup(newDefault)
-                        .thenCompose(__ -> groupCatalogCache.warmAll())
-                        .join();
-
-                // re-prime online users
-                for (Player player : getServer().getOnlinePlayers()) {
-                    groupService.load(player.getUniqueId())
-                            .thenCompose(__ -> prefixService.primePrefix(player.getUniqueId()))
-                            .thenCompose(__ -> {
-                                String currentGroup = groupPlayerCache.getIfPresent(player.getUniqueId()).getPrimaryGroup().name();
-                                return permissionService.applyFor(player.getUniqueId(), currentGroup);
-                            })
-                            .thenRun(() -> General.runSync(this, () -> prefixService.refreshDisplayName(player)))
-                            .join();
-                }
-
-                messageService.send(initiator, "Reload.OK");
-            } catch (Exception e) {
-                messageService.send(initiator, "Reload.Error", Msg.str("error", e.getMessage() == null ? "unknown" : e.getMessage()));
-            }
-        });
+    private void registerListeners(Listener @NotNull ... listeners) {
+        for (Listener listener : listeners) {
+            this.getServer().getPluginManager().registerEvents(listener, this);
+        }
     }
 
     public ConfigManager getConfigManager() {
@@ -261,6 +311,30 @@ public class ManusGroups extends JavaPlugin {
         return database;
     }
 
+    public GroupRepository getGroupRepository() {
+        return groupRepository;
+    }
+
+    public GroupCatalogCache getGroupCatalogCache() {
+        return groupCatalogCache;
+    }
+
+    public GroupPlayerCache getGroupPlayerCache() {
+        return groupPlayerCache;
+    }
+
+    public GroupPermissionCache getGroupPermissionCache() {
+        return groupPermissionCache;
+    }
+
+    public ExpiryScheduler getExpiryScheduler() {
+        return expiryScheduler;
+    }
+
+    public GroupService getGroupService() {
+        return groupService;
+    }
+
     public PrefixServiceImpl getPrefixService() {
         return prefixService;
     }
@@ -269,15 +343,19 @@ public class ManusGroups extends JavaPlugin {
         return chatFormatService;
     }
 
+    public PermissionServiceImpl getPermissionService() {
+        return permissionService;
+    }
+
+    public GroupSignService getSignService() {
+        return signService;
+    }
+
     public MessageService getMessageService() {
         return messageService;
     }
 
     public Commands getCommands() {
         return commands;
-    }
-
-    public GroupService getGroupService() {
-        return groupService;
     }
 }
