@@ -33,7 +33,7 @@ public class JoinQuitListener implements Listener {
         groupService.ensureDefaultPersisted(event.getPlayer().getUniqueId())
                 // Load groupPlayer (snapshot)
                 .thenCompose(__ -> groupService.load(event.getPlayer().getUniqueId()))
-                // Prime preifx cache
+                // Prime prefix cache
                 .thenCompose(__ -> prefixService.primePrefix(event.getPlayer().getUniqueId()))
                 // Permissions applien
                 .thenCompose(__ -> permissionService.refreshFor(event.getPlayer().getUniqueId()))

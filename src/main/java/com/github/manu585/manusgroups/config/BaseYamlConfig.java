@@ -6,7 +6,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -48,34 +47,6 @@ public abstract class BaseYamlConfig implements ManagedConfig {
 
             this.yaml.save(this.file);
         });
-    }
-
-    @Override
-    public void load() throws Exception {
-        File data = plugin.getDataFolder();
-
-        if (!data.exists() && !data.mkdirs()) {
-            throw new IOException("Could not create data folder!");
-        }
-
-        this.file = new File(data, fileName());
-
-        if (!file.exists()) {
-            InputStream in = plugin.getResource(file.getName());
-            if (in != null) {
-                plugin.getLogger().info("File found in plugin jar: copying...");
-                plugin.saveResource(file.getName(), false);
-            } else {
-                plugin.getLogger().info("No jar embed resource for " + file.getName() + ". creating new file");
-                if (!file.createNewFile()) {
-                    plugin.getLogger().warning("Failed to create file: " + file.getName());
-                }
-            }
-        }
-
-        // Load yaml into memory
-        yaml = YamlConfiguration.loadConfiguration(file);
-        yaml.options().copyDefaults(true);
     }
 
     public abstract void fill() throws Exception;
