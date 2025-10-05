@@ -42,7 +42,7 @@ class PermissionExpanderTest {
 
         final Map<String, Boolean> out = PermissionExpander.expand(raw, registered);
 
-        // "essentials.*" should have granted both "essentials" and everyrhing starting with it.
+        // "essentials.*" should have granted both "essentials" and everything starting with it.
         // From our list, "essentials.god" matches, should be true
         assertThat(out).containsEntry("essentials.god", true);
 
