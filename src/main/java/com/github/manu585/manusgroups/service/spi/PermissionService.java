@@ -1,4 +1,4 @@
-package com.github.manu585.manusgroups.permissions;
+package com.github.manu585.manusgroups.service.spi;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;

@@ -1,8 +1,8 @@
 package com.github.manu585.manusgroups.listeners;
 
-import com.github.manu585.manusgroups.permissions.PermissionService;
+import com.github.manu585.manusgroups.service.spi.PermissionService;
 import com.github.manu585.manusgroups.service.GroupService;
-import com.github.manu585.manusgroups.spi.PrefixService;
+import com.github.manu585.manusgroups.service.spi.PrefixService;
 import com.github.manu585.manusgroups.util.General;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -12,7 +12,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
-import static com.github.manu585.manusgroups.imp.PrefixServiceImpl.teamNameFor;
+import static com.github.manu585.manusgroups.service.impl.PrefixServiceImpl.teamNameFor;
 
 public class JoinQuitListener implements Listener {
     private final JavaPlugin plugin;

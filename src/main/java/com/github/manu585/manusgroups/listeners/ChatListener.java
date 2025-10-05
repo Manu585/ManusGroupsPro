@@ -1,6 +1,6 @@
 package com.github.manu585.manusgroups.listeners;
 
-import com.github.manu585.manusgroups.spi.ChatFormatService;
+import com.github.manu585.manusgroups.service.spi.ChatFormatService;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;

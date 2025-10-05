@@ -1,4 +1,4 @@
-package com.github.manu585.manusgroups.spi;
+package com.github.manu585.manusgroups.service.spi;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;

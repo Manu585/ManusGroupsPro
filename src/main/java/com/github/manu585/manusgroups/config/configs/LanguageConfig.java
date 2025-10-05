@@ -25,9 +25,10 @@ public final class LanguageConfig extends BaseYamlConfig {
         yaml.addDefault("Usage.Delete",       "<gray>Usage:</gray> <yellow>/groups delete <name></yellow>");
         yaml.addDefault("Usage.Info",         "<gray>Usage:</gray> <yellow>/groups info [player]</yellow>");
         yaml.addDefault("Usage.Reload",       "<gray>Usage:</gray> <yellow>/groups reload</yellow>");
-        yaml.addDefault("Usage.PermAdd",      "<gray>Usage:</gray> <yellow>/groups permadd <group> <node> [true|false]</yellow>");
-        yaml.addDefault("Usage.PermRemove",   "<gray>Usage:</gray> <yellow>/groups permremove <group> <node></yellow>");
-        yaml.addDefault("Usage.PermList",     "<gray>Usage:</gray> <yellow>/groups permlist <group></yellow>");
+        yaml.addDefault("Usage.Permission",   "<gray>Usage:</gray> <yellow>/groups permission <add|remove|list> ...</yellow>");
+        yaml.addDefault("Usage.PermAdd",      "<gray>Usage:</gray> <yellow>/groups permission add <group> <node> [true|false]</yellow>");
+        yaml.addDefault("Usage.PermRemove",   "<gray>Usage:</gray> <yellow>/groups permission remove <group> <node></yellow>");
+        yaml.addDefault("Usage.PermList",     "<gray>Usage:</gray> <yellow>/groups permission list <group></yellow>");
         yaml.addDefault("Usage.Sign",         "<gray>Usage:</gray> <yellow>/groups sign bind <player> | /groups sign unbind</yellow>");
         yaml.addDefault("Usage.SignBindAt",   "<gray>Usage:</gray> <yellow>/groups sign bindat <player> <world> <x> <y> <z></yellow>");
         yaml.addDefault("Usage.SignUnbindAt", "<gray>Usage:</gray> <yellow>/groups sign unbindat <world> <x> <y> <z></yellow>");

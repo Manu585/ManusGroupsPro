@@ -1,9 +1,9 @@
 package com.github.manu585.manusgroups.commands.sub;
 
 import com.github.manu585.manusgroups.commands.BaseCommand;
-import com.github.manu585.manusgroups.messaging.MessageService;
-import com.github.manu585.manusgroups.messaging.Msg;
-import com.github.manu585.manusgroups.signs.GroupSignService;
+import com.github.manu585.manusgroups.service.MessageService;
+import com.github.manu585.manusgroups.service.util.Msg;
+import com.github.manu585.manusgroups.service.spi.GroupSignService;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;

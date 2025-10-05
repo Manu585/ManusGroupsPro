@@ -1,4 +1,4 @@
-package com.github.manu585.manusgroups.messaging;
+package com.github.manu585.manusgroups.service.util;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.Tag;

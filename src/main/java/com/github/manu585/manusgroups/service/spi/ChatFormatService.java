@@ -1,4 +1,4 @@
-package com.github.manu585.manusgroups.spi;
+package com.github.manu585.manusgroups.service.spi;
 
 import io.papermc.paper.chat.ChatRenderer;
 

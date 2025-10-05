@@ -1,5 +1,7 @@
 package com.github.manu585.manusgroups.messaging;
 
+import com.github.manu585.manusgroups.service.MessageService;
+import com.github.manu585.manusgroups.service.util.Msg;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;

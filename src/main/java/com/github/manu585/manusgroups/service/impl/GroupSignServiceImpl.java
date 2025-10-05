@@ -1,11 +1,12 @@
-package com.github.manu585.manusgroups.signs;
+package com.github.manu585.manusgroups.service.impl;
 
 import com.github.manu585.manusgroups.cache.GroupPlayerCache;
-import com.github.manu585.manusgroups.defaults.DefaultGroup;
+import com.github.manu585.manusgroups.service.spi.GroupSignService;
+import com.github.manu585.manusgroups.util.DefaultGroup;
 import com.github.manu585.manusgroups.domain.Group;
 import com.github.manu585.manusgroups.domain.GroupPlayer;
-import com.github.manu585.manusgroups.messaging.MessageService;
-import com.github.manu585.manusgroups.messaging.Msg;
+import com.github.manu585.manusgroups.service.MessageService;
+import com.github.manu585.manusgroups.service.util.Msg;
 import com.github.manu585.manusgroups.repo.GroupRepository;
 import com.github.manu585.manusgroups.util.General;
 import net.kyori.adventure.text.Component;

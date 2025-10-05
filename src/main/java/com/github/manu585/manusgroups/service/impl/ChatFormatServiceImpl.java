@@ -1,7 +1,7 @@
-package com.github.manu585.manusgroups.imp;
+package com.github.manu585.manusgroups.service.impl;
 
-import com.github.manu585.manusgroups.spi.ChatFormatService;
-import com.github.manu585.manusgroups.spi.PrefixService;
+import com.github.manu585.manusgroups.service.spi.ChatFormatService;
+import com.github.manu585.manusgroups.service.spi.PrefixService;
 import io.papermc.paper.chat.ChatRenderer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;

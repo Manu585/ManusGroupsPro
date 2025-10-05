@@ -1,7 +1,7 @@
-package com.github.manu585.manusgroups.imp;
+package com.github.manu585.manusgroups.service.impl;
 
 import com.github.manu585.manusgroups.cache.GroupPlayerCache;
-import com.github.manu585.manusgroups.spi.PrefixService;
+import com.github.manu585.manusgroups.service.spi.PrefixService;
 import com.github.manu585.manusgroups.util.General;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;

@@ -22,13 +22,13 @@ public class JdbcGroupAssignmentDao extends JdbcHelper implements GroupAssignmen
         return query("""
                 SELECT user_uuid, group_name, expires_at
                 FROM `group_assignments`
-                WHERE user_uuid = (?)
+                WHERE user_uuid = ?
                 LIMIT 1
                 """, rs -> new GroupAssignment(
                         Uuids.toUuid(rs.getBytes("user_uuid")),
                         rs.getString("group_name"),
                         rs.getTimestamp("expires_at") == null ? null : rs.getTimestamp("expires_at").toInstant()
-        ), (Object) Uuids.toBytes(user)).getFirst();
+        ), (Object) Uuids.toBytes(user)).stream().findFirst().orElse(null);
     }
 
     @Override

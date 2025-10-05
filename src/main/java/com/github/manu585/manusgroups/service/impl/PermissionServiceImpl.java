@@ -1,8 +1,10 @@
-package com.github.manu585.manusgroups.permissions;
+package com.github.manu585.manusgroups.service.impl;
 
 import com.github.manu585.manusgroups.cache.GroupPermissionCache;
 import com.github.manu585.manusgroups.cache.GroupPlayerCache;
 import com.github.manu585.manusgroups.domain.GroupPlayer;
+import com.github.manu585.manusgroups.service.util.PermissionExpander;
+import com.github.manu585.manusgroups.service.spi.PermissionService;
 import com.github.manu585.manusgroups.util.General;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
@@ -75,19 +77,21 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     private void applyNow(UUID user, Map<String, Boolean> rawNodes) {
-        Player player = plugin.getServer().getPlayer(user);
+        final Player player = plugin.getServer().getPlayer(user);
         if (player == null || !player.isOnline()) {
             attachments.remove(user);
             return;
         }
 
         final List<String> registered = new ArrayList<>();
-
         for (final Permission permission : plugin.getServer().getPluginManager().getPermissions()) {
             registered.add(permission.getName());
         }
 
-        final Map<String, Boolean> nodes = PermissionExpander.expand(rawNodes, registered);
+        // Expand wildcards, ensure exact nodes from DB are applied
+        final Map<String, Boolean> expanded = PermissionExpander.expand(rawNodes, registered);
+        expanded.putAll(rawNodes); // Exacts override
+
         final PermissionAttachment attachment = attachments.computeIfAbsent(user, __ -> player.addAttachment(plugin));
 
         // Clear old permissions
@@ -96,7 +100,7 @@ public class PermissionServiceImpl implements PermissionService {
         }
 
         // Apply new ones
-        nodes.forEach(attachment::setPermission);
+        expanded.forEach(attachment::setPermission);
 
         player.recalculatePermissions();
         player.updateCommands();

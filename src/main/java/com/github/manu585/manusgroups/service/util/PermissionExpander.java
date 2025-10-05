@@ -1,4 +1,4 @@
-package com.github.manu585.manusgroups.permissions;
+package com.github.manu585.manusgroups.service.util;
 
 import java.util.*;
 
@@ -22,7 +22,7 @@ public final class PermissionExpander {
 
             // Prefix star -> "prefix" and everything starting with "prefix."
             if (node.endsWith(".*")) {
-                String prefix = node.substring(0, node.length() - 2);
+                final String prefix = node.substring(0, node.length() - 2);
                 for (String r : registered) {
                     if (r.equals(prefix) || r.startsWith(prefix + ".")) {
                         out.put(r, value);
@@ -31,10 +31,7 @@ public final class PermissionExpander {
                 continue;
             }
 
-            // Exact node
-            if (registered.contains(node)) {
-                out.put(node, value); // exact always overrides prior wildcard writes
-            }
+            out.put(node, value);
         }
 
         return out;

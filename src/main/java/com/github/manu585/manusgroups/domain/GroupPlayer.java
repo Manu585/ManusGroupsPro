@@ -1,6 +1,6 @@
 package com.github.manu585.manusgroups.domain;
 
-import com.github.manu585.manusgroups.defaults.DefaultGroup;
+import com.github.manu585.manusgroups.util.DefaultGroup;
 
 import java.util.UUID;
 import java.util.function.Function;

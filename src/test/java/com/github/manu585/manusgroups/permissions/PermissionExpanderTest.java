@@ -1,5 +1,6 @@
 package com.github.manu585.manusgroups.permissions;
 
+import com.github.manu585.manusgroups.service.util.PermissionExpander;
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;

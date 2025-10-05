@@ -1,7 +1,7 @@
 package com.github.manu585.manusgroups.listeners;
 
 import com.github.manu585.manusgroups.events.GroupChangeEvent;
-import com.github.manu585.manusgroups.spi.PrefixService;
+import com.github.manu585.manusgroups.service.spi.PrefixService;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

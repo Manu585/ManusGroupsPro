@@ -1,4 +1,4 @@
-package com.github.manu585.manusgroups.defaults;
+package com.github.manu585.manusgroups.util;
 
 import com.github.manu585.manusgroups.domain.Group;
 

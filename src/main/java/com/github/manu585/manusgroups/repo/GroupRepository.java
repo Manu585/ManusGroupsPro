@@ -18,7 +18,6 @@ public interface GroupRepository {
     CompletableFuture<Boolean> deleteGroup(String groupName);
     CompletableFuture<List<UUID>> listUsersByGroup(String groupName);
 
-
     // Assignments
     CompletableFuture<@Nullable GroupAssignment> findAssignment(UUID user);
     CompletableFuture<Void> upsertAssignment(UUID user, String groupName, @Nullable Instant expiresAt);
