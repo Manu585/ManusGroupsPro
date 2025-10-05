@@ -42,6 +42,7 @@ public final class LanguageConfig extends BaseYamlConfig {
         // Assignments
         yaml.addDefault("Assign.Granted", "<yellow>Granted <gray><player></gray> group <gray><group></gray><permanent>.</yellow>");
         yaml.addDefault("Assign.Revoked", "<yellow>Revoked group <gray><group></gray> from <gray><player></gray>.</yellow>");
+        yaml.addDefault("Assign.NoChange","<yellow>No group to revoke for</yellow> <gray><player></gray> <yellow>(already</yellow> <gray><group></gray><yellow>).</yellow>");
 
         // Info
         yaml.addDefault("Info.Self",  "<yellow>Your group:</yellow> <gray><group></gray> <gray>(</gray><yellow><remaining></yellow><gray>)</gray>");
@@ -72,6 +73,7 @@ public final class LanguageConfig extends BaseYamlConfig {
         yaml.addDefault("Sign.Unbound",  "<yellow>Sign unbound.</yellow>");
         yaml.addDefault("Sign.NotFound", "<red>No sign binding found here.</red>");
         yaml.addDefault("Sign.Error",    "<red>Sign operation failed:</red> <error>");
+        yaml.addDefault("Sign.Arm",      "<yellow>Ready:</yellow> <gray>Shift+Right-Click a sign</gray> <yellow>to bind it to</yellow> <gray><player></gray> <yellow>within 60s.</yellow>");
 
         // Signs (lines)
         yaml.addDefault("Signs.Format.Line1", "<prefix>");

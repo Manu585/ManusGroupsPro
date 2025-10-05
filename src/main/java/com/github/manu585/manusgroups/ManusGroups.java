@@ -11,6 +11,8 @@ import com.github.manu585.manusgroups.expiry.ExpiryScheduler;
 import com.github.manu585.manusgroups.listeners.ChatListener;
 import com.github.manu585.manusgroups.listeners.GroupChangeListener;
 import com.github.manu585.manusgroups.listeners.JoinQuitListener;
+import com.github.manu585.manusgroups.listeners.SignListener;
+import com.github.manu585.manusgroups.manager.SignSelectionManager;
 import com.github.manu585.manusgroups.repo.Database;
 import com.github.manu585.manusgroups.repo.DbExecutor;
 import com.github.manu585.manusgroups.repo.GroupRepository;
@@ -56,6 +58,8 @@ public class ManusGroups extends JavaPlugin {
     private GroupSignService signService;
 
     private MessageService messageService;
+
+    private SignSelectionManager selectionManager;
 
     private Commands commands;
 
@@ -109,6 +113,9 @@ public class ManusGroups extends JavaPlugin {
         );
     }
 
+    /**
+     * Init core functionality
+     */
     private void initCore() {
         // DAOs & Repository Instantiation
         createRepository(database.getHikariDataSource());
@@ -181,9 +188,12 @@ public class ManusGroups extends JavaPlugin {
         permissionService = new PermissionServiceImpl(this, groupPermissionCache, groupPlayerCache);
         signService = new GroupSignServiceImpl(this, groupRepository, groupPlayerCache, messageService);
 
+        selectionManager = new SignSelectionManager();
+
         // Register Temp Group Scheduler
         expiryScheduler = new ExpiryQueue();
 
+        // Business Logic: Group Service Instantiation
         groupService = new GroupService(
                 this,
                 groupRepository,
@@ -198,6 +208,7 @@ public class ManusGroups extends JavaPlugin {
         // Expiry handling
         expiryScheduler.registerListener(uuid -> groupService.clearToDefault(uuid).thenRun(() -> signService.refreshFor(uuid)));
 
+        // Bootstrap Expiry Scheduler
         groupRepository.listAllWithExpiry()
                 .thenAccept(list -> {
                     expiryScheduler.bootstrap(list);
@@ -211,7 +222,8 @@ public class ManusGroups extends JavaPlugin {
         registerListeners(
                 new JoinQuitListener(this, groupService, prefixService, permissionService),
                 new GroupChangeListener(prefixService),
-                new ChatListener(chatFormatService)
+                new ChatListener(chatFormatService),
+                new SignListener(signService, selectionManager, messageService)
         );
 
         commands = new Commands(
@@ -222,7 +234,8 @@ public class ManusGroups extends JavaPlugin {
                 groupCatalogCache,
                 groupPermissionCache,
                 permissionService,
-                signService
+                signService,
+                selectionManager
         );
 
         // Prime players already online
@@ -353,6 +366,10 @@ public class ManusGroups extends JavaPlugin {
 
     public MessageService getMessageService() {
         return messageService;
+    }
+
+    public SignSelectionManager getSelectionManager() {
+        return selectionManager;
     }
 
     public Commands getCommands() {

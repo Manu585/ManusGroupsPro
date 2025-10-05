@@ -17,6 +17,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -185,6 +186,11 @@ public class GroupCommand extends BaseCommand {
 
         groupService.load(target.getUniqueId()).thenCompose(groupPlayer -> {
             final String currentGroup = (groupPlayer.getPrimaryGroup() == null) ? DefaultGroup.name() : groupPlayer.getPrimaryGroup().name();
+
+            if (currentGroup.equalsIgnoreCase(DefaultGroup.name())) {
+                messages.send(sender, "Assign.NoChange", Msg.str("player", target.getName()), Msg.str("group", DefaultGroup.name()));
+                return CompletableFuture.completedFuture(null);
+            }
 
             return groupService.clearToDefault(target.getUniqueId()).thenRun(() -> messages.send(sender, "Assign.Revoked", Msg.str("player", target.getName()), Msg.str("group", currentGroup)));
         });

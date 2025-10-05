@@ -7,6 +7,7 @@ import com.github.manu585.manusgroups.commands.sub.GroupCommand;
 import com.github.manu585.manusgroups.commands.sub.GroupSignCommand;
 import com.github.manu585.manusgroups.commands.sub.PermissionCommand;
 import com.github.manu585.manusgroups.commands.sub.ReloadCommand;
+import com.github.manu585.manusgroups.manager.SignSelectionManager;
 import com.github.manu585.manusgroups.repo.GroupRepository;
 import com.github.manu585.manusgroups.service.GroupService;
 import com.github.manu585.manusgroups.service.MessageService;
@@ -21,14 +22,21 @@ import java.util.*;
 public class Commands implements CommandExecutor, TabCompleter {
     private final Map<String, BaseCommand> commands = new HashMap<>();
 
-    public Commands(ManusGroups plugin, MessageService messageService, GroupService service, GroupRepository repository, GroupCatalogCache groupCatalog, GroupPermissionCache permissionCache, PermissionService permissionService, GroupSignService signService) {
+    public Commands(
+            ManusGroups plugin,
+            MessageService messageService,
+            GroupService service,
+            GroupRepository repository,
+            GroupCatalogCache groupCatalog,
+            GroupPermissionCache permissionCache,
+            PermissionService permissionService,
+            GroupSignService signService,
+            SignSelectionManager selectionManager)
+    {
         register(new GroupCommand(messageService, service, groupCatalog, repository));
-
         register(new ReloadCommand(plugin));
-
         register(new PermissionCommand(messageService, repository, groupCatalog, permissionCache, permissionService));
-
-        register(new GroupSignCommand(messageService, signService));
+        register(new GroupSignCommand(messageService, signService, selectionManager));
 
         final PluginCommand groupCommand = plugin.getCommand("groups");
         if (groupCommand == null) return;

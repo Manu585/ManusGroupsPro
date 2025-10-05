@@ -64,8 +64,8 @@ public class ExpiryQueue implements ExpiryScheduler {
             return;
         }
 
-        Item fresh = new Item(user, expiresAt);
-        Item old = index.put(user, fresh);
+        final Item fresh = new Item(user, expiresAt);
+        final Item old = index.put(user, fresh);
         if (old != null) {
             queue.remove(old); // remove stale tasks if present
         }
