@@ -8,6 +8,7 @@ import com.github.manu585.manusgroups.domain.Group;
 import com.github.manu585.manusgroups.domain.GroupPlayer;
 import com.github.manu585.manusgroups.events.GroupChangeEvent;
 import com.github.manu585.manusgroups.expiry.ExpiryScheduler;
+import com.github.manu585.manusgroups.permissions.PermissionService;
 import com.github.manu585.manusgroups.repo.GroupRepository;
 import com.github.manu585.manusgroups.spi.PrefixService;
 import com.github.manu585.manusgroups.util.General;
@@ -30,14 +31,23 @@ public class GroupService {
     private final GroupCatalogCache catalog;
     private final GroupPlayerCache players;
     private final PrefixService prefixes;
+    private final PermissionService permissionService;
     private final ExpiryScheduler expiry;
 
-    public GroupService(final ManusGroups plugin, final GroupRepository repository, final GroupCatalogCache catalog, final GroupPlayerCache players, final PrefixService prefixes, final ExpiryScheduler expiry) {
+    public GroupService(final ManusGroups plugin,
+                        final GroupRepository repository,
+                        final GroupCatalogCache catalog,
+                        final GroupPlayerCache players,
+                        final PrefixService prefixes,
+                        final PermissionService permissionService,
+                        final ExpiryScheduler expiry)
+    {
         this.plugin = plugin;
         this.repository = repository;
         this.catalog = catalog;
         this.players = players;
         this.prefixes = prefixes;
+        this.permissionService = permissionService;
         this.expiry = expiry;
     }
 
@@ -67,6 +77,7 @@ public class GroupService {
         return repository.upsertAssignment(user, groupName, expiresAt)
                 .thenRun(() -> expiry.scheduleOrCancel(user, expiresAt))
                 .thenCompose(__ -> refreshPlayerSnapshot(user))
+                .thenCompose(__ -> permissionService.applyFor(user, groupName))
                 .thenCompose(__ -> refreshPlayerUi(user))
                 .thenRun(() -> fireGroupChange(user, catalog.get(groupName)));
     }
@@ -120,6 +131,7 @@ public class GroupService {
     public void invalidateCachesFor(UUID user) {
         players.invalidate(user);
         prefixes.invalidate(user);
+        permissionService.clear(user);
     }
 
     /* =====================

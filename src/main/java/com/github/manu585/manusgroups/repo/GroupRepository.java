@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -15,12 +15,17 @@ public interface GroupRepository {
     CompletableFuture<List<Group>> listGroups();
     CompletableFuture<Void> upsertGroup(Group group);
     CompletableFuture<Boolean> deleteGroup(String groupName);
+    CompletableFuture<List<UUID>> listUsersByGroup(String groupName);
+
 
     // Assignments
-    CompletableFuture<Optional<GroupAssignment>> findAssignment(UUID user);
+    CompletableFuture<@Nullable GroupAssignment> findAssignment(UUID user);
     CompletableFuture<Void> upsertAssignment(UUID user, String groupName, @Nullable Instant expiresAt);
     CompletableFuture<Boolean> deleteAssignment(UUID user);
-
-    CompletableFuture<List<UUID>> listUsersByGroup(String groupName);
     CompletableFuture<List<GroupAssignment>> listAllWithExpiry();
+
+    // Group Permissions
+    CompletableFuture<Map<String, Boolean>> listPermissionsByGroup(String groupName);
+    CompletableFuture<Void> upsertPermission(String groupName, String node, boolean value);
+    CompletableFuture<Boolean> deletePermission(String groupName, String node);
 }

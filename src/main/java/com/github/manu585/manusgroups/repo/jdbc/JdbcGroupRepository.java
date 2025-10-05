@@ -6,12 +6,13 @@ import com.github.manu585.manusgroups.repo.DbExecutor;
 import com.github.manu585.manusgroups.repo.GroupRepository;
 import com.github.manu585.manusgroups.repo.jdbc.dao.GroupAssignmentDao;
 import com.github.manu585.manusgroups.repo.jdbc.dao.GroupDao;
+import com.github.manu585.manusgroups.repo.jdbc.dao.GroupPermissionDao;
 import com.github.manu585.manusgroups.repo.jdbc.dao.UserDao;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -22,12 +23,14 @@ public class JdbcGroupRepository implements GroupRepository {
     private final UserDao users;
     private final GroupDao groups;
     private final GroupAssignmentDao assignments;
+    private final GroupPermissionDao permissions;
     private final DbExecutor executor;
 
-    public JdbcGroupRepository(UserDao users, GroupDao groups, GroupAssignmentDao assignment, DbExecutor executor) {
+    public JdbcGroupRepository(UserDao users, GroupDao groups, GroupAssignmentDao assignment, GroupPermissionDao permissions, DbExecutor executor) {
         this.users = users;
         this.groups = groups;
         this.assignments = assignment;
+        this.permissions = permissions;
         this.executor = executor;
     }
 
@@ -65,10 +68,10 @@ public class JdbcGroupRepository implements GroupRepository {
     }
 
     @Override
-    public CompletableFuture<Optional<GroupAssignment>> findAssignment(UUID user) {
+    public CompletableFuture<GroupAssignment> findAssignment(UUID user) {
         return executor.supply(() -> {
             try {
-                return Optional.ofNullable(assignments.findByUser(user));
+                return assignments.findByUser(user);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -114,6 +117,39 @@ public class JdbcGroupRepository implements GroupRepository {
         return executor.supply(() -> {
             try {
                 return assignments.listAllWithExpiry();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<Map<String, Boolean>> listPermissionsByGroup(String groupName) {
+        return executor.supply(() -> {
+            try {
+                return permissions.listByGroup(groupName);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<Void> upsertPermission(String groupName, String node, boolean value) {
+        return executor.run(() -> {
+            try {
+                permissions.upsert(groupName, node, value);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<Boolean> deletePermission(String groupName, String node) {
+        return executor.supply(() -> {
+            try {
+                return permissions.delete(groupName, node);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

@@ -1,6 +1,7 @@
 package com.github.manu585.manusgroups;
 
 import com.github.manu585.manusgroups.cache.GroupCatalogCache;
+import com.github.manu585.manusgroups.cache.GroupPermissionCache;
 import com.github.manu585.manusgroups.cache.GroupPlayerCache;
 import com.github.manu585.manusgroups.commands.Commands;
 import com.github.manu585.manusgroups.config.ConfigManager;
@@ -15,12 +16,14 @@ import com.github.manu585.manusgroups.listeners.GroupChangeListener;
 import com.github.manu585.manusgroups.listeners.JoinQuitListener;
 import com.github.manu585.manusgroups.messaging.MessageService;
 import com.github.manu585.manusgroups.messaging.Msg;
+import com.github.manu585.manusgroups.permissions.PermissionServiceImpl;
 import com.github.manu585.manusgroups.repo.Database;
 import com.github.manu585.manusgroups.repo.DbExecutor;
 import com.github.manu585.manusgroups.repo.GroupRepository;
 import com.github.manu585.manusgroups.repo.jdbc.JdbcGroupRepository;
 import com.github.manu585.manusgroups.repo.jdbc.dao.JdbcGroupAssignmentDao;
 import com.github.manu585.manusgroups.repo.jdbc.dao.JdbcGroupDao;
+import com.github.manu585.manusgroups.repo.jdbc.dao.JdbcGroupPermissionDao;
 import com.github.manu585.manusgroups.repo.jdbc.dao.JdbcUserDao;
 import com.github.manu585.manusgroups.service.GroupService;
 import com.github.manu585.manusgroups.util.General;
@@ -41,12 +44,15 @@ public class ManusGroups extends JavaPlugin {
     private GroupRepository groupRepository;
     private GroupCatalogCache groupCatalogCache;
     private GroupPlayerCache groupPlayerCache;
+    private GroupPermissionCache groupPermissionCache;
 
     private ExpiryScheduler expiryScheduler;
 
     private GroupService groupService;
+
     private PrefixServiceImpl prefixService;
     private ChatFormatServiceImpl chatFormatService;
+    private PermissionServiceImpl permissionService;
 
     private MessageService messageService;
 
@@ -90,9 +96,10 @@ public class ManusGroups extends JavaPlugin {
         JdbcUserDao userDao = new JdbcUserDao(dataSource);
         JdbcGroupDao groupDao = new JdbcGroupDao(dataSource);
         JdbcGroupAssignmentDao assignmentDao = new JdbcGroupAssignmentDao(dataSource);
+        JdbcGroupPermissionDao permissionDao = new JdbcGroupPermissionDao(dataSource);
 
         // Data Repository
-        groupRepository = new JdbcGroupRepository(userDao, groupDao, assignmentDao, executorService);
+        groupRepository = new JdbcGroupRepository(userDao, groupDao, assignmentDao, permissionDao, executorService);
 
         // Default group "provider"
         Group defaultGroup = new Group(
@@ -106,11 +113,13 @@ public class ManusGroups extends JavaPlugin {
         // Caches
         groupCatalogCache = new GroupCatalogCache(groupRepository);
         groupPlayerCache = new GroupPlayerCache(groupRepository, groupCatalogCache);
+        groupPermissionCache = new GroupPermissionCache(groupRepository);
 
         // Ensure Default group exists
         groupRepository.upsertGroup(defaultGroup)
                 // Put all Groups from DB into Cache
                 .thenCompose(__ -> groupCatalogCache.warmAll())
+                .thenCompose(__ -> groupPermissionCache.warmAll(groupCatalogCache.snapshot().keySet()))
                 // Finish Initiation
                 .thenRun(() -> General.runSync(this, this::finishInit))
 
@@ -130,7 +139,9 @@ public class ManusGroups extends JavaPlugin {
         // Register Services
         prefixService = new PrefixServiceImpl(this, groupPlayerCache);
         chatFormatService = new ChatFormatServiceImpl(prefixService, configManager.getLanguageConfig().getChatFormat());
-        groupService = new GroupService(this, groupRepository, groupCatalogCache, groupPlayerCache, prefixService, expiryScheduler);
+        permissionService = new PermissionServiceImpl(this, groupPermissionCache, groupPlayerCache);
+
+        groupService = new GroupService(this, groupRepository, groupCatalogCache, groupPlayerCache, prefixService, permissionService, expiryScheduler);
 
         expiryScheduler.registerListener(uuid -> groupService.clearToDefault(uuid));
 
@@ -145,7 +156,7 @@ public class ManusGroups extends JavaPlugin {
 
         // Register Listeners
         registerListeners(
-                new JoinQuitListener(this, groupService, prefixService),
+                new JoinQuitListener(this, groupService, prefixService, permissionService),
                 new GroupChangeListener(prefixService),
                 new ChatListener(chatFormatService)
         );
@@ -153,7 +164,7 @@ public class ManusGroups extends JavaPlugin {
         messageService = new MessageService(configManager.getLanguageConfig().yaml());
 
         // Register Commands
-        commands = new Commands(this, messageService, groupService, groupRepository, groupCatalogCache, chatFormatService);
+        commands = new Commands(this, messageService, groupService, groupRepository, groupCatalogCache, groupPermissionCache, permissionService);
 
 
         // Prime online players that joined before initCore process finished (async)
@@ -161,6 +172,7 @@ public class ManusGroups extends JavaPlugin {
             groupService.ensureDefaultPersisted(player.getUniqueId())
                     .thenCompose(__ -> groupService.load(player.getUniqueId()))
                     .thenCompose(__ -> prefixService.primePrefix(player.getUniqueId()))
+                    .thenCompose(__ -> permissionService.refreshFor(player.getUniqueId()))
                     .thenRun(() -> General.runSync(this, () -> prefixService.refreshDisplayName(player)));
         }
 
@@ -220,6 +232,10 @@ public class ManusGroups extends JavaPlugin {
                 for (Player player : getServer().getOnlinePlayers()) {
                     groupService.load(player.getUniqueId())
                             .thenCompose(__ -> prefixService.primePrefix(player.getUniqueId()))
+                            .thenCompose(__ -> {
+                                String currentGroup = groupPlayerCache.getIfPresent(player.getUniqueId()).getPrimaryGroup().name();
+                                return permissionService.applyFor(player.getUniqueId(), currentGroup);
+                            })
                             .thenRun(() -> General.runSync(this, () -> prefixService.refreshDisplayName(player)))
                             .join();
                 }

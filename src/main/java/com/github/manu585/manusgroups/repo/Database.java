@@ -86,6 +86,19 @@ public final class Database implements AutoCloseable {
                             ON DELETE RESTRICT
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
                         """);
+
+                // GROUP PERMISSIONS
+                statement.execute("""
+                        CREATE TABLE IF NOT EXISTS `group_permissions` (
+                          `group_name` VARCHAR(36) NOT NULL,
+                          `node` VARCHAR(128) NOT NULL,
+                          `value` TINYINT(1) NOT NULL DEFAULT 1,
+                          PRIMARY KEY (`group_name`, `node`),
+                          CONSTRAINT `fk_gp_group`
+                            FOREIGN KEY (`group_name`) REFERENCES `groups` (`name`)
+                            ON DELETE CASCADE
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                        """);
             }
         }).whenComplete((__, ex) -> General.runSync(plugin, () -> {
             if (ex != null) {

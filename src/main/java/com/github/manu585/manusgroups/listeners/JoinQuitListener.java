@@ -1,5 +1,6 @@
 package com.github.manu585.manusgroups.listeners;
 
+import com.github.manu585.manusgroups.permissions.PermissionService;
 import com.github.manu585.manusgroups.service.GroupService;
 import com.github.manu585.manusgroups.spi.PrefixService;
 import com.github.manu585.manusgroups.util.General;
@@ -17,18 +18,26 @@ public class JoinQuitListener implements Listener {
     private final JavaPlugin plugin;
     private final GroupService groupService;
     private final PrefixService prefixService;
+    private final PermissionService permissionService;
 
-    public JoinQuitListener(final JavaPlugin plugin, final GroupService groupService, final PrefixService prefixService) {
+    public JoinQuitListener(final JavaPlugin plugin, final GroupService groupService, final PrefixService prefixService, final PermissionService permissionService) {
         this.plugin = plugin;
         this.groupService = groupService;
         this.prefixService = prefixService;
+        this.permissionService = permissionService;
     }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
+        // Make sure default group exists
         groupService.ensureDefaultPersisted(event.getPlayer().getUniqueId())
+                // Load groupPlayer (snapshot)
                 .thenCompose(__ -> groupService.load(event.getPlayer().getUniqueId()))
+                // Prime preifx cache
                 .thenCompose(__ -> prefixService.primePrefix(event.getPlayer().getUniqueId()))
+                // Permissions applien
+                .thenCompose(__ -> permissionService.refreshFor(event.getPlayer().getUniqueId()))
+                // Refresh display name
                 .thenRun(() -> General.runSync(plugin, () -> prefixService.refreshDisplayName(event.getPlayer())
                 ));
 

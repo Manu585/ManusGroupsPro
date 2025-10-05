@@ -25,6 +25,10 @@ public final class LanguageConfig extends BaseYamlConfig {
         yaml.addDefault("Usage.Delete", "<gray>Usage:</gray> <yellow>/groups delete <name></yellow>");
         yaml.addDefault("Usage.Info",   "<gray>Usage:</gray> <yellow>/groups info [player]</yellow>");
         yaml.addDefault("Usage.Reload", "<gray>Usage:</gray> <yellow>/groups reload</yellow>");
+        yaml.addDefault("Usage.PermAdd",    "<gray>Usage:</gray> <yellow>/groups permadd <group> <node> [true|false]</yellow>");
+        yaml.addDefault("Usage.PermRemove", "<gray>Usage:</gray> <yellow>/groups permremove <group> <node></yellow>");
+        yaml.addDefault("Usage.PermList",   "<gray>Usage:</gray> <yellow>/groups permlist <group></yellow>");
+
 
         // Groups
         yaml.addDefault("Group.CreatedOrUpdated", "<yellow>Group <gray><name></gray> saved.</yellow>");
@@ -44,6 +48,14 @@ public final class LanguageConfig extends BaseYamlConfig {
         // Reload
         yaml.addDefault("Reload.OK",    "<yellow>Configuration reloaded.</yellow>");
         yaml.addDefault("Reload.Error", "<red>Reload failed:</red> <error>");
+
+        // Permissions
+        yaml.addDefault("Perm.Added",   "<yellow>Added permission</yellow> <gray><node></gray> <gray>=</gray> <gray><value></gray> <yellow>to group</yellow> <gray><group></gray>.");
+        yaml.addDefault("Perm.Removed", "<yellow>Removed permission</yellow> <gray><node></gray> <yellow>from group</yellow> <gray><group></gray>.");
+        yaml.addDefault("Perm.ListHeader", "<gray>Permissions for group</gray> <gray><group></gray>:");
+        yaml.addDefault("Perm.ListEntry",  " - <gray><node></gray> <gray>=</gray> <gray><value></gray>");
+        yaml.addDefault("Perm.ListEmpty",  "<yellow>No permissions set for group</yellow> <gray><group></gray>.");
+        yaml.addDefault("Perm.Error",      "<red>Permissions error:</red> <error>");
 
         // Errors
         yaml.addDefault("Errors.PlayerNotOnline", "<red>Player <gray><player></gray> is not online.</red>");
