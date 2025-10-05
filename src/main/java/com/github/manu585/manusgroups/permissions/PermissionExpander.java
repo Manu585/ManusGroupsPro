@@ -1,58 +1,42 @@
 package com.github.manu585.manusgroups.permissions;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public final class PermissionExpander {
     private PermissionExpander() {}
 
-    public static Map<String, Boolean> expand(final Map<String, Boolean> rawNodes, final Collection<String> registeredPermissions) {
-        if (rawNodes == null || rawNodes.isEmpty()) return Collections.emptyMap();
+    public static Map<String, Boolean> expand(final Map<String, Boolean> raw, final List<String> registered) {
+        final Map<String, Boolean> out = new LinkedHashMap<>();
 
-        Map<String, Boolean> positives = new LinkedHashMap<>();
-        Map<String, Boolean> negatives = new LinkedHashMap<>();
+        for (Map.Entry<String, Boolean> entry : raw.entrySet()) {
+            final String node = entry.getKey();
+            final boolean value = entry.getValue();
 
-        for (Map.Entry<String, Boolean> entry : rawNodes.entrySet()) {
-            (entry.getValue() ? positives : negatives).put(entry.getKey(), entry.getValue());
-        }
+            // Global star -> all registered nodes
+            if ("*".equals(node)) {
+                for (String r : registered) {
+                    out.put(r, value);
+                }
+                continue;
+            }
 
-        Map<String, Boolean> out = new LinkedHashMap<>();
+            // Prefix star -> "prefix" and everything starting with "prefix."
+            if (node.endsWith(".*")) {
+                String prefix = node.substring(0, node.length() - 2);
+                for (String r : registered) {
+                    if (r.equals(prefix) || r.startsWith(prefix + ".")) {
+                        out.put(r, value);
+                    }
+                }
+                continue;
+            }
 
-        // Expand positives
-        for (Map.Entry<String, Boolean> entry : positives.entrySet()) {
-            expandOne(entry.getKey(), true, registeredPermissions, out);
-        }
-
-        // Expand negatives
-        for (Map.Entry<String, Boolean> entry : negatives.entrySet()) {
-            expandOne(entry.getKey(), false, registeredPermissions, out);
+            // Exact node
+            if (registered.contains(node)) {
+                out.put(node, value); // exact always overrides prior wildcard writes
+            }
         }
 
         return out;
-    }
-
-    private static void expandOne(final String key, final boolean value, final Collection<String> registered, final Map<String, Boolean> out) {
-        if ("*".equals(key)) {
-            for (String permission : registered) {
-                out.put(permission, value);
-            }
-            return;
-        }
-
-        if (key.endsWith(".*")) {
-            final String prefix = key.substring(0, key.length() - 2);
-            final String prefixDot = prefix + ".";
-            for (String permission : registered) {
-                if (permission.equals(prefix) || permission.startsWith(prefixDot)) {
-                    out.put(permission, value);
-                }
-            }
-            return;
-        }
-
-        // Exact node
-        out.put(key, value);
     }
 }

@@ -81,7 +81,7 @@ public class PermissionServiceImpl implements PermissionService {
             return;
         }
 
-        final Set<String> registered = new HashSet<>();
+        final List<String> registered = new ArrayList<>();
 
         for (final Permission permission : plugin.getServer().getPluginManager().getPermissions()) {
             registered.add(permission.getName());

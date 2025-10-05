@@ -23,6 +23,10 @@ public final class Durations {
         Duration total = Duration.ZERO;
 
         while (matcher.find()) {
+            if (matcher.start() != pos) {
+                throw new IllegalArgumentException("Invalid duration at: " + s.substring(pos));
+            }
+
             long amount = Long.parseLong(matcher.group(1));
             char unit = matcher.group(2).charAt(0);
             if (amount < 0) throw new IllegalArgumentException("Negatives are not allowed");

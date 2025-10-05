@@ -64,4 +64,56 @@ class PermissionExpanderTest {
         assertThat(out).containsEntry("foo.bar", true);
         assertThat(out).hasSize(1);
     }
+
+    @Test
+    void globalDenyMarksAllFalse() {
+        final Map<String, Boolean> raw = Map.of("*", false);
+        final List<String> registered = List.of("foo.bar", "bar.foo");
+
+        final Map<String, Boolean> out = PermissionExpander.expand(raw, registered);
+
+        assertThat(out).containsEntry("foo.bar", false).containsEntry("bar.foo", false).hasSize(2);
+    }
+
+    @Test
+    void unknownPrefixStartIsIgnored() {
+        final Map<String, Boolean> raw = Map.of("notexisting.*", true);
+        final List<String> registered = List.of("essentials.fly", "foo.bar");
+
+        final Map<String, Boolean> out = PermissionExpander.expand(raw, registered);
+
+        assertThat(out).isEmpty();
+    }
+
+    @Test
+    void laterExplicitOverridesEarlierWildcardEvenIfOpposite() {
+        final Map<String, Boolean> raw = new LinkedHashMap<>();
+        raw.put("essentials.*", false); // First deny essential
+        raw.put("essentials.fly", true); // Then explicitly allow fly
+
+        final List<String> registered = List.of("essentials.fly", "essentials.god");
+
+        final Map<String, Boolean> out = PermissionExpander.expand(raw, registered);
+
+        assertThat(out).containsEntry("essentials.fly", true); // explicit override
+        assertThat(out).containsEntry("essentials.god", false); // still denied via wildcard
+        assertThat(out).hasSize(2);
+    }
+
+    @Test
+    void multiplePrefixesPlusExplicitNegative() {
+        final Map<String, Boolean> raw = new LinkedHashMap<>();
+        raw.put("essentials.*", true);
+        raw.put("groupspro.*", true);
+        raw.put("essentials.god", false); // exact negative given
+
+        final List<String> registered = List.of("essentials.god", "essentials.fly", "groupspro.admin");
+
+        final Map<String, Boolean> out = PermissionExpander.expand(raw, registered);
+
+        assertThat(out).containsEntry("essentials.fly", true);
+        assertThat(out).containsEntry("groupspro.admin", true);
+        assertThat(out).containsEntry("essentials.god", false);
+        assertThat(out).hasSize(3);
+    }
 }
