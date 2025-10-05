@@ -1,7 +1,7 @@
 package com.github.manu585.manusgroups.listeners;
 
-import com.github.manu585.manusgroups.service.spi.PermissionService;
 import com.github.manu585.manusgroups.service.GroupService;
+import com.github.manu585.manusgroups.service.spi.PermissionService;
 import com.github.manu585.manusgroups.service.spi.PrefixService;
 import com.github.manu585.manusgroups.util.General;
 import org.bukkit.event.EventHandler;
@@ -45,8 +45,8 @@ public class JoinQuitListener implements Listener {
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        Scoreboard scoreboard = event.getPlayer().getScoreboard();
-        Team team = scoreboard.getTeam(teamNameFor(event.getPlayer().getUniqueId()));
+        final Scoreboard scoreboard = event.getPlayer().getScoreboard();
+        final Team team = scoreboard.getTeam(teamNameFor(event.getPlayer().getUniqueId()));
         if (team != null) {
             team.unregister();
         }

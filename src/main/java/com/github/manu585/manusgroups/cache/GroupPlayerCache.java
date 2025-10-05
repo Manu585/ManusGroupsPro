@@ -1,8 +1,8 @@
 package com.github.manu585.manusgroups.cache;
 
-import com.github.manu585.manusgroups.util.DefaultGroup;
 import com.github.manu585.manusgroups.domain.GroupPlayer;
 import com.github.manu585.manusgroups.repo.GroupRepository;
+import com.github.manu585.manusgroups.util.DefaultGroup;
 
 import java.time.Instant;
 import java.util.UUID;

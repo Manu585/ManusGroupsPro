@@ -1,6 +1,8 @@
 package com.github.manu585.manusgroups.service.util;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public final class PermissionExpander {
     private PermissionExpander() {}
@@ -8,7 +10,7 @@ public final class PermissionExpander {
     public static Map<String, Boolean> expand(final Map<String, Boolean> raw, final List<String> registered) {
         final Map<String, Boolean> out = new LinkedHashMap<>();
 
-        for (Map.Entry<String, Boolean> entry : raw.entrySet()) {
+        for (final Map.Entry<String, Boolean> entry : raw.entrySet()) {
             final String node = entry.getKey();
             final boolean value = entry.getValue();
 
@@ -33,7 +35,6 @@ public final class PermissionExpander {
 
             out.put(node, value);
         }
-
         return out;
     }
 }

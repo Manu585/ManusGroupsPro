@@ -16,7 +16,7 @@ public class GroupChangeListener implements Listener {
 
     @EventHandler
     public void onGroupChange(GroupChangeEvent event) {
-        Player player = Bukkit.getPlayer(event.getUuid());
+        final Player player = Bukkit.getPlayer(event.getUuid());
         if (player == null || !player.isOnline()) return;
 
         prefixService.invalidate(event.getUuid());

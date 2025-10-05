@@ -7,7 +7,7 @@ public class DefaultGroup {
 
     private DefaultGroup() {}
 
-    public static void initialize(Group g) {
+    public static void initialize(final Group g) {
         if (group != null) return;
         group = g;
     }
@@ -28,7 +28,7 @@ public class DefaultGroup {
         }
     }
 
-    public static void set(Group newDefault) {
+    public static void set(final Group newDefault) {
         group = newDefault;
         ensureInit();
     }

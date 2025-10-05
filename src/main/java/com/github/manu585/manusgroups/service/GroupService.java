@@ -3,15 +3,15 @@ package com.github.manu585.manusgroups.service;
 import com.github.manu585.manusgroups.ManusGroups;
 import com.github.manu585.manusgroups.cache.GroupCatalogCache;
 import com.github.manu585.manusgroups.cache.GroupPlayerCache;
-import com.github.manu585.manusgroups.service.spi.GroupSignService;
-import com.github.manu585.manusgroups.service.spi.PermissionService;
-import com.github.manu585.manusgroups.util.DefaultGroup;
 import com.github.manu585.manusgroups.domain.Group;
 import com.github.manu585.manusgroups.domain.GroupPlayer;
 import com.github.manu585.manusgroups.events.GroupChangeEvent;
 import com.github.manu585.manusgroups.expiry.ExpiryScheduler;
 import com.github.manu585.manusgroups.repo.GroupRepository;
+import com.github.manu585.manusgroups.service.spi.GroupSignService;
+import com.github.manu585.manusgroups.service.spi.PermissionService;
 import com.github.manu585.manusgroups.service.spi.PrefixService;
+import com.github.manu585.manusgroups.util.DefaultGroup;
 import com.github.manu585.manusgroups.util.General;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
@@ -123,7 +123,7 @@ public class GroupService {
     public CompletableFuture<Void> deleteGroupByReassigning(String groupName) {
         return repository.listUsersByGroup(groupName)
                 .thenCompose(affected -> {
-                    List<CompletableFuture<?>> ops = new ArrayList<>();
+                    final List<CompletableFuture<?>> ops = new ArrayList<>();
                     for (UUID uuid : affected) {
                         ops.add(setGroup(uuid, DefaultGroup.name(), null));
                     }
@@ -173,7 +173,7 @@ public class GroupService {
      */
     private CompletableFuture<Void> refreshPlayerUi(UUID user) {
         return prefixes.primePrefix(user).thenRun(() -> {
-            Player player = plugin.getServer().getPlayer(user);
+            final Player player = plugin.getServer().getPlayer(user);
             if (player != null) {
                 runOnMain(() -> prefixes.refreshDisplayName(player));
             }
@@ -186,11 +186,11 @@ public class GroupService {
      * @param groupName Name of the group to check
      */
     private CompletableFuture<Void> refreshPlayersUsingGroup(String groupName) {
-        List<CompletableFuture<?>> tasks = new ArrayList<>();
+        final List<CompletableFuture<?>> tasks = new ArrayList<>();
         
         for (Player player : plugin.getServer().getOnlinePlayers()) {
-            UUID uuid = player.getUniqueId();
-            GroupPlayer snapshot = players.getIfPresent(uuid);
+            final UUID uuid = player.getUniqueId();
+            final GroupPlayer snapshot = players.getIfPresent(uuid);
             if (snapshot == null || !snapshot.hasGroup(groupName)) continue;
 
             tasks.add(refreshPlayerSnapshot(uuid).thenCompose(__ -> refreshPlayerUi(uuid)));

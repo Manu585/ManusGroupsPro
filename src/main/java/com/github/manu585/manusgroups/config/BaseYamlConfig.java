@@ -1,8 +1,8 @@
 package com.github.manu585.manusgroups.config;
 
-import com.github.manu585.manusgroups.ManusGroups;
 import com.github.manu585.manusgroups.repo.DbExecutor;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -12,22 +12,22 @@ import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class BaseYamlConfig implements ManagedConfig {
-    protected final ManusGroups plugin;
+    protected final JavaPlugin plugin;
 
     protected File file;
     protected YamlConfiguration yaml;
 
-    protected BaseYamlConfig(final @NotNull ManusGroups plugin) {
+    protected BaseYamlConfig(final @NotNull JavaPlugin plugin) {
         this.plugin = plugin;
     }
 
     @Override
     public CompletableFuture<Void> prepareAsync(DbExecutor executor) {
         return executor.run(() -> {
-            Path data = plugin.getDataFolder().toPath();
+            final Path data = plugin.getDataFolder().toPath();
             Files.createDirectories(data);
 
-            Path path = data.resolve(fileName());
+            final Path path = data.resolve(fileName());
             this.file = path.toFile();
 
             if (Files.notExists(path)) {

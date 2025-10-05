@@ -94,7 +94,7 @@ public class ExpiryQueue implements ExpiryScheduler {
     }
 
     public void remove(UUID user) {
-        Item old = index.remove(user);
+        final Item old = index.remove(user);
         if (old != null) {
             queue.remove(old);
         }
@@ -107,12 +107,12 @@ public class ExpiryQueue implements ExpiryScheduler {
     private void loop() {
         try {
             while (running && !Thread.currentThread().isInterrupted()) {
-                Item due = queue.take(); // block until due
+                final Item due = queue.take(); // block until due
 
                 // Users timer been replaced since queued?
                 if (index.getOrDefault(due.user, due) != due) continue;
 
-                Consumer<UUID> listener = this.onExpire;
+                final Consumer<UUID> listener = this.onExpire;
                 if (listener != null) {
                     listener.accept(due.user);
                 }
@@ -134,7 +134,7 @@ public class ExpiryQueue implements ExpiryScheduler {
 
         @Override
         public long getDelay(TimeUnit unit) {
-            long diff = epochMilli - System.currentTimeMillis();
+            final long diff = epochMilli - System.currentTimeMillis();
             return unit.convert(diff, TimeUnit.MILLISECONDS);
         }
 

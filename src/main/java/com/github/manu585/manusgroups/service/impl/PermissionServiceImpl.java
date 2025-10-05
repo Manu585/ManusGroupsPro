@@ -3,15 +3,18 @@ package com.github.manu585.manusgroups.service.impl;
 import com.github.manu585.manusgroups.cache.GroupPermissionCache;
 import com.github.manu585.manusgroups.cache.GroupPlayerCache;
 import com.github.manu585.manusgroups.domain.GroupPlayer;
-import com.github.manu585.manusgroups.service.util.PermissionExpander;
 import com.github.manu585.manusgroups.service.spi.PermissionService;
+import com.github.manu585.manusgroups.service.util.PermissionExpander;
 import com.github.manu585.manusgroups.util.General;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,8 +39,8 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public CompletableFuture<Void> clear(UUID user) {
         return runMain(() -> {
-            PermissionAttachment attachment = attachments.remove(user);
-            Player player = plugin.getServer().getPlayer(user);
+            final PermissionAttachment attachment = attachments.remove(user);
+            final Player player = plugin.getServer().getPlayer(user);
 
             if (attachment != null && player != null && player.isOnline()) {
                 player.removeAttachment(attachment);
@@ -48,10 +51,10 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public CompletableFuture<Void> refreshAllForGroup(String groupName) {
-        List<CompletableFuture<Void>> tasks = new ArrayList<>();
+        final List<CompletableFuture<Void>> tasks = new ArrayList<>();
 
         for (Player player : plugin.getServer().getOnlinePlayers()) {
-            GroupPlayer groupPlayer = playerCache.getIfPresent(player.getUniqueId());
+            final GroupPlayer groupPlayer = playerCache.getIfPresent(player.getUniqueId());
             if (groupPlayer == null) continue;
             if (!groupPlayer.hasGroup(groupName)) continue;
 
@@ -107,7 +110,7 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     private CompletableFuture<Void> runMain(Runnable r) {
-        CompletableFuture<Void> future = new CompletableFuture<>();
+        final CompletableFuture<Void> future = new CompletableFuture<>();
         General.runSync(plugin, () -> {
             try {
                 r.run();

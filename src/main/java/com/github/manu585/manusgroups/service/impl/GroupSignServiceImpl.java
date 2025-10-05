@@ -1,13 +1,13 @@
 package com.github.manu585.manusgroups.service.impl;
 
 import com.github.manu585.manusgroups.cache.GroupPlayerCache;
-import com.github.manu585.manusgroups.service.spi.GroupSignService;
-import com.github.manu585.manusgroups.util.DefaultGroup;
 import com.github.manu585.manusgroups.domain.Group;
 import com.github.manu585.manusgroups.domain.GroupPlayer;
-import com.github.manu585.manusgroups.service.MessageService;
-import com.github.manu585.manusgroups.service.util.Msg;
 import com.github.manu585.manusgroups.repo.GroupRepository;
+import com.github.manu585.manusgroups.service.MessageService;
+import com.github.manu585.manusgroups.service.spi.GroupSignService;
+import com.github.manu585.manusgroups.service.util.Msg;
+import com.github.manu585.manusgroups.util.DefaultGroup;
 import com.github.manu585.manusgroups.util.General;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
@@ -76,7 +76,7 @@ public class GroupSignServiceImpl implements GroupSignService {
     }
 
     private void applyToBlock(World world, int x, int y, int z, GroupPlayer groupPlayer) {
-        Block block = world.getBlockAt(x, y, z);
+        final Block block = world.getBlockAt(x, y, z);
         if (!(block.getState() instanceof Sign sign)) return;
 
         final String playerName = findName(groupPlayer.getUuid());
@@ -118,12 +118,12 @@ public class GroupSignServiceImpl implements GroupSignService {
     }
 
     private String findName(UUID uuid) {
-        Player player = plugin.getServer().getPlayer(uuid);
+        final Player player = plugin.getServer().getPlayer(uuid);
         return (player != null) ? player.getName() : uuid.toString();
     }
 
     private CompletableFuture<Void> runMain(Runnable r) {
-        CompletableFuture<Void> future = new CompletableFuture<>();
+        final CompletableFuture<Void> future = new CompletableFuture<>();
         General.runSync(plugin, () -> {
             try {
                 r.run();

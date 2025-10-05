@@ -13,7 +13,7 @@ public final class Durations {
 
     private Durations() {}
 
-    public static Duration parse(String input) {
+    public static Duration parse(final String input) {
         if (input == null) throw new IllegalArgumentException("null");
         String s = input.trim().toLowerCase(Locale.ROOT);
         if (s.isEmpty()) throw new IllegalArgumentException("empty");
@@ -27,8 +27,8 @@ public final class Durations {
                 throw new IllegalArgumentException("Invalid duration at: " + s.substring(pos));
             }
 
-            long amount = Long.parseLong(matcher.group(1));
-            char unit = matcher.group(2).charAt(0);
+            final long amount = Long.parseLong(matcher.group(1));
+            final char unit = matcher.group(2).charAt(0);
             if (amount < 0) throw new IllegalArgumentException("Negatives are not allowed");
 
             switch (unit) {
@@ -52,7 +52,7 @@ public final class Durations {
         return total;
     }
 
-    public static String formatCompact(Duration duration) {
+    public static String formatCompact(final Duration duration) {
         if (duration.isZero() || duration.isNegative()) return "0s";
 
         long seconds = duration.getSeconds();

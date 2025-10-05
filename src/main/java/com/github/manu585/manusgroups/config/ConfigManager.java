@@ -23,7 +23,7 @@ public final class ConfigManager {
     }
 
     public CompletableFuture<Void> prepareAllAsync(DbExecutor executor) {
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        final List<CompletableFuture<Void>> futures = new ArrayList<>();
         for (ManagedConfig config : configs) {
             futures.add(config.prepareAsync(executor));
         }

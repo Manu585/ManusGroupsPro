@@ -36,7 +36,7 @@ public class PrefixServiceImpl implements PrefixService {
     @Override
     public CompletableFuture<Component> primePrefix(UUID uuid) {
         return players.getOrLoad(uuid).thenApply(groupPlayer -> {
-            Component component = (groupPlayer.getPrimaryGroup() == null) ? Component.empty() : MM.deserialize(groupPlayer.getPrimaryGroup().prefix());
+            final Component component = (groupPlayer.getPrimaryGroup() == null) ? Component.empty() : MM.deserialize(groupPlayer.getPrimaryGroup().prefix());
             cache.put(uuid, component);
 
             return component;
@@ -50,8 +50,8 @@ public class PrefixServiceImpl implements PrefixService {
 
     @Override
     public void refreshDisplayName(Player player) {
-        UUID uuid = player.getUniqueId();
-        Component cached = cachedPrefix(uuid);
+        final UUID uuid = player.getUniqueId();
+        final Component cached = cachedPrefix(uuid);
 
         if (!cached.equals(Component.empty())) {
             General.runSync(plugin, () -> applyDisplayName(player, cached));
@@ -76,13 +76,13 @@ public class PrefixServiceImpl implements PrefixService {
 
     private void applyScoreboardTeamPrefix(Player player, Component prefix) {
         Scoreboard scoreboard = player.getScoreboard();
-        ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
+        final ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
 
         if (scoreboard == Bukkit.getScoreboardManager().getMainScoreboard()) {
             scoreboard = scoreboardManager.getMainScoreboard();
         }
 
-        String teamName = teamNameFor(player.getUniqueId());
+        final String teamName = teamNameFor(player.getUniqueId());
         Team team = scoreboard.getTeam(teamName);
         if (team == null) {
             team = scoreboard.registerNewTeam(teamName);

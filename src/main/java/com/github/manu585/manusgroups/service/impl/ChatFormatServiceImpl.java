@@ -20,7 +20,7 @@ public class ChatFormatServiceImpl implements ChatFormatService {
         this.chatFormat.set(initialFormat);
 
         renderer = (source, sourceDisplayName, message, viewer) -> {
-            Component prefix = prefixService.cachedPrefix(source.getUniqueId());
+            final Component prefix = prefixService.cachedPrefix(source.getUniqueId());
 
             String format = chatFormat.get();
             if (format == null || format.isBlank()) {

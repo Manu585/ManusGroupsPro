@@ -3,10 +3,10 @@ package com.github.manu585.manusgroups.commands.sub;
 import com.github.manu585.manusgroups.cache.GroupCatalogCache;
 import com.github.manu585.manusgroups.cache.GroupPermissionCache;
 import com.github.manu585.manusgroups.commands.BaseCommand;
-import com.github.manu585.manusgroups.service.MessageService;
-import com.github.manu585.manusgroups.service.util.Msg;
-import com.github.manu585.manusgroups.service.spi.PermissionService;
 import com.github.manu585.manusgroups.repo.GroupRepository;
+import com.github.manu585.manusgroups.service.MessageService;
+import com.github.manu585.manusgroups.service.spi.PermissionService;
+import com.github.manu585.manusgroups.service.util.Msg;
 import org.bukkit.command.CommandSender;
 
 import java.util.List;

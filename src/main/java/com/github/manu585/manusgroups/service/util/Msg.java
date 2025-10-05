@@ -12,21 +12,21 @@ public record Msg(String key, Tag tag) {
     /**
      * Insert a plain string that is parsed by MiniMessage
      */
-    public static Msg str(String key, String value) {
+    public static Msg str(final String key, final String value) {
         return new Msg(key, Tag.preProcessParsed(value));
     }
 
     /**
      * Insert a prebuilt Adventure Component
      */
-    public static Msg comp(String key, Component value) {
+    public static Msg comp(final String key, final Component value) {
         return new Msg(key, Tag.inserting(value));
     }
 
     /**
      * "(permanent)" suffix placeholder.
      */
-    public static Msg permanent(boolean isPermanent) {
+    public static Msg permanent(final boolean isPermanent) {
         return isPermanent
                 ? new Msg("permanent", Tag.preProcessParsed(" <gray>(permanent)</gray>"))
                 : new Msg("permanent", Tag.preProcessParsed(""));
