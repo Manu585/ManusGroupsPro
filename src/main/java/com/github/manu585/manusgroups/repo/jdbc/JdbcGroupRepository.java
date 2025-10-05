@@ -2,12 +2,10 @@ package com.github.manu585.manusgroups.repo.jdbc;
 
 import com.github.manu585.manusgroups.domain.Group;
 import com.github.manu585.manusgroups.domain.GroupAssignment;
+import com.github.manu585.manusgroups.domain.SignRecord;
 import com.github.manu585.manusgroups.repo.DbExecutor;
 import com.github.manu585.manusgroups.repo.GroupRepository;
-import com.github.manu585.manusgroups.repo.jdbc.dao.GroupAssignmentDao;
-import com.github.manu585.manusgroups.repo.jdbc.dao.GroupDao;
-import com.github.manu585.manusgroups.repo.jdbc.dao.GroupPermissionDao;
-import com.github.manu585.manusgroups.repo.jdbc.dao.UserDao;
+import com.github.manu585.manusgroups.repo.jdbc.dao.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
@@ -24,13 +22,16 @@ public class JdbcGroupRepository implements GroupRepository {
     private final GroupDao groups;
     private final GroupAssignmentDao assignments;
     private final GroupPermissionDao permissions;
+    private final GroupSignDao signs;
+
     private final DbExecutor executor;
 
-    public JdbcGroupRepository(UserDao users, GroupDao groups, GroupAssignmentDao assignment, GroupPermissionDao permissions, DbExecutor executor) {
+    public JdbcGroupRepository(UserDao users, GroupDao groups, GroupAssignmentDao assignment, GroupPermissionDao permissions, GroupSignDao signs, DbExecutor executor) {
         this.users = users;
         this.groups = groups;
         this.assignments = assignment;
         this.permissions = permissions;
+        this.signs = signs;
         this.executor = executor;
     }
 
@@ -150,6 +151,72 @@ public class JdbcGroupRepository implements GroupRepository {
         return executor.supply(() -> {
             try {
                 return permissions.delete(groupName, node);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<Void> upsertSign(String world, int x, int y, int z, UUID target) {
+        return executor.run(() -> {
+            try {
+                signs.upsert(world, x, y, z, target);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<Boolean> deleteSignAt(String world, int x, int y, int z) {
+        return executor.supply(() -> {
+            try {
+                return signs.deleteAt(world, x, y, z);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<Integer> deleteSignsByTarget(UUID target) {
+        return executor.supply(() -> {
+            try {
+                return signs.deleteByTarget(target);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<@Nullable SignRecord> findSignAt(String world, int x, int y, int z) {
+        return executor.supply(() -> {
+            try {
+                return signs.findAt(world, x, y, z);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<SignRecord>> listSignsByTarget(UUID target) {
+        return executor.supply(() -> {
+            try {
+                return signs.listByTarget(target);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<SignRecord>> listAllSigns() {
+        return executor.supply(() -> {
+            try {
+                return signs.listAll();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

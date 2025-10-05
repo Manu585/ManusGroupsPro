@@ -99,6 +99,20 @@ public final class Database implements AutoCloseable {
                             ON DELETE CASCADE
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
                         """);
+
+                // GROUP SIGNS
+                statement.execute("""
+                        CREATE TABLE IF NOT EXISTS `group_signs` (
+                          `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+                          `world` VARCHAR(64) NOT NULL,
+                          `x` INT NOT NULL,
+                          `y` INT NOT NULL,
+                          `z` INT NOT NULL,
+                          `target_uuid` BINARY(16) NOT NULL,
+                          PRIMARY KEY (`id`),
+                          UNIQUE KEY `uniq_sign_location` (`world`, `x`, `y`, `z`)
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                        """);
             }
         }).whenComplete((__, ex) -> General.runSync(plugin, () -> {
             if (ex != null) {

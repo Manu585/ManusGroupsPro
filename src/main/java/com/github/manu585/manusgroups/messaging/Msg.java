@@ -4,18 +4,38 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
-public class Msg {
-    private Msg() {}
+/**
+ * Helper to build MiniMessage placeholder in a typesafe way
+ */
+public record Msg(String key, Tag tag) {
 
-    public static TagResolver comp(String name, Component value) {
-        return TagResolver.resolver(name, Tag.inserting(value == null ? Component.empty() : value));
+    /**
+     * Insert a plain string that is parsed by MiniMessage
+     */
+    public static Msg str(String key, String value) {
+        return new Msg(key, Tag.preProcessParsed(value));
     }
 
-    public static TagResolver str(String name, String value) {
-        return comp(name, Component.text(value == null ? "" : value));
+    /**
+     * Insert a prebuilt Adventure Component
+     */
+    public static Msg comp(String key, Component value) {
+        return new Msg(key, Tag.inserting(value));
     }
 
-    public static TagResolver permanent(boolean isPermanent) {
-        return str("permanent", isPermanent ? " (permanent)" : "");
+    /**
+     * "(permanent)" suffix placeholder.
+     */
+    public static Msg permanent(boolean isPermanent) {
+        return isPermanent
+                ? new Msg("permanent", Tag.preProcessParsed(" <gray>(permanent)</gray>"))
+                : new Msg("permanent", Tag.preProcessParsed(""));
+    }
+
+    /**
+     * Convert to a named TagResolve MiniMessage understands
+     */
+    public TagResolver toTag() {
+        return TagResolver.resolver(key, tag);
     }
 }

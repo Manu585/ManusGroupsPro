@@ -8,6 +8,7 @@ import com.github.manu585.manusgroups.messaging.MessageService;
 import com.github.manu585.manusgroups.permissions.PermissionService;
 import com.github.manu585.manusgroups.repo.GroupRepository;
 import com.github.manu585.manusgroups.service.GroupService;
+import com.github.manu585.manusgroups.signs.GroupSignService;
 import org.bukkit.command.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,7 +18,7 @@ import java.util.*;
 public class Commands implements CommandExecutor, TabCompleter {
     private final Map<String, BaseCommand> commands = new HashMap<>();
 
-    public Commands(ManusGroups plugin, MessageService messageService, GroupService service, GroupRepository repository, GroupCatalogCache groupCatalog, GroupPermissionCache permissionCache, PermissionService permissionService) {
+    public Commands(ManusGroups plugin, MessageService messageService, GroupService service, GroupRepository repository, GroupCatalogCache groupCatalog, GroupPermissionCache permissionCache, PermissionService permissionService, GroupSignService signService) {
         register(new GrantGroupCommand(messageService, service, groupCatalog));
         register(new RevokeGroupCommand(messageService, service));
 
@@ -31,6 +32,8 @@ public class Commands implements CommandExecutor, TabCompleter {
         register(new PermissionAddCommand(messageService, repository, groupCatalog, permissionCache, permissionService));
         register(new PermissionRemoveCommand(messageService, repository, groupCatalog, permissionCache, permissionService));
         register(new PermissionListCommand(messageService, groupCatalog, permissionCache));
+
+        register(new GroupSignCommand(messageService, signService));
 
         final PluginCommand groupCommand = plugin.getCommand("groups");
         if (groupCommand == null) return;

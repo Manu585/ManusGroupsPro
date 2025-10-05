@@ -2,6 +2,7 @@ package com.github.manu585.manusgroups.repo;
 
 import com.github.manu585.manusgroups.domain.Group;
 import com.github.manu585.manusgroups.domain.GroupAssignment;
+import com.github.manu585.manusgroups.domain.SignRecord;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
@@ -28,4 +29,12 @@ public interface GroupRepository {
     CompletableFuture<Map<String, Boolean>> listPermissionsByGroup(String groupName);
     CompletableFuture<Void> upsertPermission(String groupName, String node, boolean value);
     CompletableFuture<Boolean> deletePermission(String groupName, String node);
+
+    // Group Signs
+    CompletableFuture<Void> upsertSign(String world, int x, int y, int z, UUID target);
+    CompletableFuture<Boolean> deleteSignAt(String world, int x, int y, int z);
+    CompletableFuture<Integer> deleteSignsByTarget(UUID target);
+    CompletableFuture<@Nullable SignRecord> findSignAt(String world, int x, int y, int z);
+    CompletableFuture<List<SignRecord>> listSignsByTarget(UUID target);
+    CompletableFuture<List<SignRecord>> listAllSigns();
 }

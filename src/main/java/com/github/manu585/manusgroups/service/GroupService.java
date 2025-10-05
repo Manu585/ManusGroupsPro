@@ -10,6 +10,7 @@ import com.github.manu585.manusgroups.events.GroupChangeEvent;
 import com.github.manu585.manusgroups.expiry.ExpiryScheduler;
 import com.github.manu585.manusgroups.permissions.PermissionService;
 import com.github.manu585.manusgroups.repo.GroupRepository;
+import com.github.manu585.manusgroups.signs.GroupSignService;
 import com.github.manu585.manusgroups.spi.PrefixService;
 import com.github.manu585.manusgroups.util.General;
 import org.bukkit.entity.Player;
@@ -32,6 +33,7 @@ public class GroupService {
     private final GroupPlayerCache players;
     private final PrefixService prefixes;
     private final PermissionService permissionService;
+    private final GroupSignService signService;
     private final ExpiryScheduler expiry;
 
     public GroupService(final ManusGroups plugin,
@@ -40,6 +42,7 @@ public class GroupService {
                         final GroupPlayerCache players,
                         final PrefixService prefixes,
                         final PermissionService permissionService,
+                        final GroupSignService signService,
                         final ExpiryScheduler expiry)
     {
         this.plugin = plugin;
@@ -48,6 +51,7 @@ public class GroupService {
         this.players = players;
         this.prefixes = prefixes;
         this.permissionService = permissionService;
+        this.signService = signService;
         this.expiry = expiry;
     }
 
@@ -79,7 +83,8 @@ public class GroupService {
                 .thenCompose(__ -> refreshPlayerSnapshot(user))
                 .thenCompose(__ -> permissionService.applyFor(user, groupName))
                 .thenCompose(__ -> refreshPlayerUi(user))
-                .thenRun(() -> fireGroupChange(user, catalog.get(groupName)));
+                .thenRun(() -> fireGroupChange(user, catalog.get(groupName)))
+                .thenRun(() -> signService.refreshFor(user));
     }
 
     /**

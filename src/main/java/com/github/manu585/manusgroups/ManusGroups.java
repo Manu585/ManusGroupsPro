@@ -21,11 +21,10 @@ import com.github.manu585.manusgroups.repo.Database;
 import com.github.manu585.manusgroups.repo.DbExecutor;
 import com.github.manu585.manusgroups.repo.GroupRepository;
 import com.github.manu585.manusgroups.repo.jdbc.JdbcGroupRepository;
-import com.github.manu585.manusgroups.repo.jdbc.dao.JdbcGroupAssignmentDao;
-import com.github.manu585.manusgroups.repo.jdbc.dao.JdbcGroupDao;
-import com.github.manu585.manusgroups.repo.jdbc.dao.JdbcGroupPermissionDao;
-import com.github.manu585.manusgroups.repo.jdbc.dao.JdbcUserDao;
+import com.github.manu585.manusgroups.repo.jdbc.dao.*;
 import com.github.manu585.manusgroups.service.GroupService;
+import com.github.manu585.manusgroups.signs.GroupSignService;
+import com.github.manu585.manusgroups.signs.GroupSignServiceImpl;
 import com.github.manu585.manusgroups.util.General;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -53,6 +52,7 @@ public class ManusGroups extends JavaPlugin {
     private PrefixServiceImpl prefixService;
     private ChatFormatServiceImpl chatFormatService;
     private PermissionServiceImpl permissionService;
+    private GroupSignService signService;
 
     private MessageService messageService;
 
@@ -97,9 +97,10 @@ public class ManusGroups extends JavaPlugin {
         JdbcGroupDao groupDao = new JdbcGroupDao(dataSource);
         JdbcGroupAssignmentDao assignmentDao = new JdbcGroupAssignmentDao(dataSource);
         JdbcGroupPermissionDao permissionDao = new JdbcGroupPermissionDao(dataSource);
+        JdbcGroupSignDao signDao = new JdbcGroupSignDao(dataSource);
 
         // Data Repository
-        groupRepository = new JdbcGroupRepository(userDao, groupDao, assignmentDao, permissionDao, executorService);
+        groupRepository = new JdbcGroupRepository(userDao, groupDao, assignmentDao, permissionDao, signDao, executorService);
 
         // Default group "provider"
         Group defaultGroup = new Group(
@@ -137,13 +138,16 @@ public class ManusGroups extends JavaPlugin {
         expiryScheduler = new ExpiryQueue();
 
         // Register Services
+        messageService = new MessageService(configManager.getLanguageConfig().yaml());
+
         prefixService = new PrefixServiceImpl(this, groupPlayerCache);
         chatFormatService = new ChatFormatServiceImpl(prefixService, configManager.getLanguageConfig().getChatFormat());
         permissionService = new PermissionServiceImpl(this, groupPermissionCache, groupPlayerCache);
+        signService = new GroupSignServiceImpl(this, groupRepository, groupPlayerCache, messageService);
 
-        groupService = new GroupService(this, groupRepository, groupCatalogCache, groupPlayerCache, prefixService, permissionService, expiryScheduler);
+        groupService = new GroupService(this, groupRepository, groupCatalogCache, groupPlayerCache, prefixService, permissionService, signService, expiryScheduler);
 
-        expiryScheduler.registerListener(uuid -> groupService.clearToDefault(uuid));
+        expiryScheduler.registerListener(uuid -> groupService.clearToDefault(uuid).thenRun(() -> signService.refreshFor(uuid)));
 
         groupRepository.listAllWithExpiry()
                 .thenAccept(list -> {
@@ -161,10 +165,8 @@ public class ManusGroups extends JavaPlugin {
                 new ChatListener(chatFormatService)
         );
 
-        messageService = new MessageService(configManager.getLanguageConfig().yaml());
-
         // Register Commands
-        commands = new Commands(this, messageService, groupService, groupRepository, groupCatalogCache, groupPermissionCache, permissionService);
+        commands = new Commands(this, messageService, groupService, groupRepository, groupCatalogCache, groupPermissionCache, permissionService, signService);
 
 
         // Prime online players that joined before initCore process finished (async)

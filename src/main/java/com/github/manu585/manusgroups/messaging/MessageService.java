@@ -6,6 +6,9 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.util.Arrays;
+
+
 public class MessageService {
     private static final MiniMessage MM = MiniMessage.miniMessage();
 
@@ -19,15 +22,34 @@ public class MessageService {
         this.lang = newLang;
     }
 
-    public Component render(String key, TagResolver... placeholders) {
+    public Component render(String key, TagResolver... resolvers) {
         String raw = lang.getString(key);
         if (raw == null) {
             raw = "<red>Missing lang key:</red> <gray>" + key + "</gray>";
         }
-        return MM.deserialize(raw, placeholders == null ? TagResolver.empty() : TagResolver.resolver(placeholders));
+
+        TagResolver combined = (resolvers == null || resolvers.length == 0) ? TagResolver.empty() : TagResolver.resolver(resolvers);
+        return MM.deserialize(raw, combined);
     }
 
-    public void send(CommandSender sender, String key, TagResolver... placeholders) {
-        sender.sendMessage(render(key, placeholders));
+    public Component formatToComponent(String key, Msg... placeholders) {
+        TagResolver[] tags = (placeholders == null || placeholders.length == 0) ? new TagResolver[0] : Arrays.stream(placeholders).map(Msg::toTag).toArray(TagResolver[]::new);
+        return render(key, tags);
+    }
+
+    public void send(CommandSender sender, String key) {
+        sender.sendMessage(render(key));
+    }
+
+    public void send(CommandSender sender, String key, Msg... placeholders) {
+        sender.sendMessage(formatToComponent(key, placeholders));
+    }
+
+    public void sendWithResolvers(CommandSender sender, String key, TagResolver... resolvers) {
+        sender.sendMessage(render(key, resolvers));
+    }
+
+    public MiniMessage mm() {
+        return MM;
     }
 }
