@@ -26,24 +26,23 @@ public final class GroupPlayerCache {
             return CompletableFuture.completedFuture(cachedGroupPlayer);
         }
 
-        return repository.findAssignment(user).thenApply(groupAssignments -> {
-            String resolvedName = null;
+        // Fetch GroupAssignment for given user
+        return repository.findAssignment(user).thenCompose(groupAssignmentOptional -> {
 
-            if (groupAssignments.isPresent()) {
-                GroupAssignment assignment = groupAssignments.get();
-                if (assignment.expiresAt() == null || assignment.expiresAt().isAfter(Instant.now())) {
-                    resolvedName = assignment.groupName();
-                } else {
-                    // Expired
-                    repository.deleteAssignment(user);
-                }
+            // If expired, delete in DB and continue with null
+            if (groupAssignmentOptional.isPresent()
+                    && groupAssignmentOptional.get().expiresAt() != null
+                    && !groupAssignmentOptional.get().expiresAt().isAfter(Instant.now())) {
+                return repository.deleteAssignment(user).handle((__, __ex) -> null);
             }
 
-            if (resolvedName == null) {
-                resolvedName = DefaultGroup.name();
-            }
+            // Else continue with a valid name or null
+            return CompletableFuture.completedFuture(groupAssignmentOptional.map(GroupAssignment::groupName).orElse(null));
+        }).thenApply(result -> {
+            final String resolvedName = (result == null) ? DefaultGroup.name() : result;
 
-            final GroupPlayer fresh = GroupPlayer.from(user, resolvedName, catalogCache::get);
+            // Build snapshot and cache
+            GroupPlayer fresh = GroupPlayer.from(user, resolvedName, catalogCache::get);
             cache.put(user, fresh);
             return fresh;
         });
