@@ -33,8 +33,5 @@ public interface GroupRepository {
     // Group Signs
     CompletableFuture<Void> upsertSign(String world, int x, int y, int z, UUID target);
     CompletableFuture<Boolean> deleteSignAt(String world, int x, int y, int z);
-    CompletableFuture<Integer> deleteSignsByTarget(UUID target);
-    CompletableFuture<@Nullable SignRecord> findSignAt(String world, int x, int y, int z);
     CompletableFuture<List<SignRecord>> listSignsByTarget(UUID target);
-    CompletableFuture<List<SignRecord>> listAllSigns();
 }

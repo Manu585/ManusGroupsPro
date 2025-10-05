@@ -29,10 +29,4 @@ public interface GroupSignService {
      * @param target UUID of player
      */
     void refreshFor(UUID target);
-
-
-    /**
-     * Re-render all signs
-     */
-    CompletableFuture<Void> refreshAll();
 }

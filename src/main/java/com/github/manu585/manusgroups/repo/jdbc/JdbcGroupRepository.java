@@ -104,23 +104,8 @@ public class JdbcGroupRepository implements GroupRepository {
     }
 
     @Override
-    public CompletableFuture<Integer> deleteSignsByTarget(UUID target) {
-        return supply(() -> signs.deleteByTarget(target));
-    }
-
-    @Override
-    public CompletableFuture<@Nullable SignRecord> findSignAt(String world, int x, int y, int z) {
-        return supply(() -> signs.findAt(world, x, y, z));
-    }
-
-    @Override
     public CompletableFuture<List<SignRecord>> listSignsByTarget(UUID target) {
         return supply(() -> signs.listByTarget(target));
-    }
-
-    @Override
-    public CompletableFuture<List<SignRecord>> listAllSigns() {
-        return supply(signs::listAll);
     }
 
     private <T> CompletableFuture<T> supply(DbCallable<T> task) {

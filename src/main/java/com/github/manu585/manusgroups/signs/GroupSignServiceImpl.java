@@ -66,14 +66,6 @@ public class GroupSignServiceImpl implements GroupSignService {
         });
     }
 
-    @Override
-    public CompletableFuture<Void> refreshAll() {
-        return repository.listAllSigns().thenCompose(list -> {
-            CompletableFuture<?>[] all = list.stream().map(record -> renderAt(plugin.getServer().getWorld(record.world()), record.x(), record.y(), record.z(), record.target())).toArray(CompletableFuture[]::new);
-            return all.length == 0 ? CompletableFuture.completedFuture(null) : CompletableFuture.allOf(all);
-        });
-    }
-
     private CompletableFuture<Void> renderAt(World world, int x, int y, int z, UUID target) {
         if (world == null) {
             return CompletableFuture.completedFuture(null);

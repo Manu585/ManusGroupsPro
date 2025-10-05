@@ -9,8 +9,5 @@ import java.util.UUID;
 public interface GroupSignDao {
     void upsert(String world, int x, int y, int z, UUID target) throws SQLException;
     boolean deleteAt(String world, int x, int y, int z) throws SQLException;
-    int deleteByTarget(UUID target) throws SQLException;
-    SignRecord findAt(String world, int x, int y, int z) throws SQLException;
     List<SignRecord> listByTarget(UUID target) throws SQLException;
-    List<SignRecord> listAll() throws SQLException;
 }

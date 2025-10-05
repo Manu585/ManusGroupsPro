@@ -29,26 +29,6 @@ public class JdbcGroupSignDao extends JdbcHelper implements GroupSignDao{
     }
 
     @Override
-    public int deleteByTarget(UUID target) throws SQLException {
-        return update("DELETE FROM `group_signs` WHERE target_uuid=?", (Object) Uuids.toBytes(target));
-    }
-
-    @Override
-    public SignRecord findAt(String world, int x, int y, int z) throws SQLException {
-        return query("""
-                SELECT world, x, y, z, target_uuid
-                FROM `group_signs`
-                WHERE world=? AND x=? AND y=? AND z=?
-                """, rs -> new SignRecord(
-                        rs.getString("world"),
-                        rs.getInt("x"),
-                        rs.getInt("y"),
-                        rs.getInt("z"),
-                        Uuids.toUuid(rs.getBytes("target_uuid"))
-        ), world, x, y, z).getFirst();
-    }
-
-    @Override
     public List<SignRecord> listByTarget(UUID target) throws SQLException {
         return query("""
                 SELECT world, x, y, z, target_uuid
@@ -61,19 +41,5 @@ public class JdbcGroupSignDao extends JdbcHelper implements GroupSignDao{
                         rs.getInt("z"),
                         Uuids.toUuid(rs.getBytes("target_uuid"))
         ), (Object) Uuids.toBytes(target));
-    }
-
-    @Override
-    public List<SignRecord> listAll() throws SQLException {
-        return query("""
-                SELECT world, x, y, z, target_uuid
-                FROM `group_signs`
-                """, rs -> new SignRecord(
-                        rs.getString("world"),
-                        rs.getInt("x"),
-                        rs.getInt("y"),
-                        rs.getInt("z"),
-                        Uuids.toUuid(rs.getBytes("target_uuid"))
-        ));
     }
 }
