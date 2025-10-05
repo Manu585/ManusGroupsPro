@@ -27,7 +27,6 @@ public class GroupCreateCommand extends BaseCommand {
             return;
         }
 
-        final String name = args.getFirst();
         final int weight;
         try {
             weight = Integer.parseInt(args.get(1));
@@ -39,7 +38,7 @@ public class GroupCreateCommand extends BaseCommand {
         final String prefix = String.join(" ", args.subList(2, args.size()));
         final Group group = new Group(args.getFirst(), prefix, weight, false);
 
-        groupService.upsertGroup(group).thenRun(() -> message.send(sender, "Group.CreatedOrUpdated", Msg.str("name", name)));
+        groupService.upsertGroup(group).thenRun(() -> message.send(sender, "Group.CreatedOrUpdated", Msg.str("name", args.getFirst())));
     }
 
     @Override

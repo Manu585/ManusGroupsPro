@@ -27,4 +27,9 @@ public class DefaultGroup {
             throw new IllegalStateException("DefaultGroup not initialized.");
         }
     }
+
+    public static void set(Group newDefault) {
+        group = newDefault;
+        ensureInit();
+    }
 }

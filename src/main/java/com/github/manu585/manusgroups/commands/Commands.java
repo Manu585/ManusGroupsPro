@@ -25,7 +25,7 @@ public class Commands implements CommandExecutor, TabCompleter {
 
         register(new GroupInfoCommand(messageService, repository));
 
-        register(new ReloadCommand(plugin, messageService, chatFormatService));
+        register(new ReloadCommand(plugin));
 
         final PluginCommand groupCommand = plugin.getCommand("groups");
         if (groupCommand == null) return;

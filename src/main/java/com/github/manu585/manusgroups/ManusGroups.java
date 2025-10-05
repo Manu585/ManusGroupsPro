@@ -14,6 +14,7 @@ import com.github.manu585.manusgroups.listeners.ChatListener;
 import com.github.manu585.manusgroups.listeners.GroupChangeListener;
 import com.github.manu585.manusgroups.listeners.JoinQuitListener;
 import com.github.manu585.manusgroups.messaging.MessageService;
+import com.github.manu585.manusgroups.messaging.Msg;
 import com.github.manu585.manusgroups.repo.Database;
 import com.github.manu585.manusgroups.repo.DbExecutor;
 import com.github.manu585.manusgroups.repo.GroupRepository;
@@ -23,6 +24,7 @@ import com.github.manu585.manusgroups.repo.jdbc.dao.JdbcGroupDao;
 import com.github.manu585.manusgroups.repo.jdbc.dao.JdbcUserDao;
 import com.github.manu585.manusgroups.service.GroupService;
 import com.github.manu585.manusgroups.util.General;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -186,6 +188,47 @@ public class ManusGroups extends JavaPlugin {
         }
 
         HandlerList.unregisterAll();
+    }
+
+    public void reloadAsync(CommandSender initiator) {
+        getServer().getScheduler().runTaskAsynchronously(this, () -> {
+            try {
+                // Reload language.yml and rewire MessageService with possibly new values
+                getConfigManager().getLanguageConfig().reload();
+                messageService.reload(getConfigManager().getLanguageConfig().yaml());
+
+                // Update chat format
+                final String newFormat = getConfigManager().getLanguageConfig().getChatFormat();
+                chatFormatService.updateFormat(newFormat);
+
+                // Refresh Defaultgroup values
+                getConfigManager().getMainConfig().reload();
+                final Group newDefault = new Group(
+                        getConfigManager().getMainConfig().getDefaultGroupName(),
+                        getConfigManager().getMainConfig().getDefaultGroupPrefix(),
+                        getConfigManager().getMainConfig().getDefaultGroupWeight(),
+                        true
+                );
+                DefaultGroup.set(newDefault);
+
+                // Persist new defaultgroup and also re-warm cache
+                groupRepository.upsertGroup(newDefault)
+                        .thenCompose(__ -> groupCatalogCache.warmAll())
+                        .join();
+
+                // re-prime online users
+                for (Player player : getServer().getOnlinePlayers()) {
+                    groupService.load(player.getUniqueId())
+                            .thenCompose(__ -> prefixService.primePrefix(player.getUniqueId()))
+                            .thenRun(() -> General.runSync(this, () -> prefixService.refreshDisplayName(player)))
+                            .join();
+                }
+
+                messageService.send(initiator, "Reload.OK");
+            } catch (Exception e) {
+                messageService.send(initiator, "Reload.Error", Msg.str("error", e.getMessage() == null ? "unknown" : e.getMessage()));
+            }
+        });
     }
 
     public ConfigManager getConfigManager() {

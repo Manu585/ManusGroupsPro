@@ -30,7 +30,7 @@ public class GroupDeleteCommand extends BaseCommand {
             return;
         }
 
-        String groupName = args.getFirst();
+        final String groupName = args.getFirst();
         if (catalog.get(groupName) == null) {
             messages.send(sender, "Group.NotFound", Msg.str("name", groupName));
             return;

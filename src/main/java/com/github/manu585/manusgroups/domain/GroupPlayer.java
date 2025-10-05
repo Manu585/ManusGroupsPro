@@ -1,5 +1,7 @@
 package com.github.manu585.manusgroups.domain;
 
+import com.github.manu585.manusgroups.defaults.DefaultGroup;
+
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -14,7 +16,7 @@ public final class GroupPlayer {
 
     // GroupPlayer Factory
     public static GroupPlayer from(UUID uuid, String groupName, Function<String, Group> resolver) {
-        Group resolved = (groupName == null) ? null : resolver.apply(groupName);
+        Group resolved = (groupName == null) ? DefaultGroup.group() : resolver.apply(groupName);
         return new GroupPlayer(uuid, resolved);
     }
 

@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public final class GroupCatalogCache {
     private final ManualCache<String, Group> cache = new ManualCache<>();
+
     private final GroupRepository repository;
 
     public GroupCatalogCache(GroupRepository repository) {

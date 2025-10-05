@@ -89,8 +89,8 @@ public class GroupService {
 
     public CompletableFuture<Void> ensureDefaultPersisted(UUID user) {
         return repository.findAssignment(user)
-                .thenCompose(opt -> {
-                    if (opt.isPresent()) {
+                .thenCompose(assignment -> {
+                    if (assignment != null) {
                         return CompletableFuture.completedFuture(null);
                     }
 
