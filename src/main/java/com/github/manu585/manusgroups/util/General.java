@@ -32,7 +32,6 @@ public final class General {
 
     /**
      * Wait for all futures to complete without result needed.
-     * Includes fail safes (CompleteExceptionally)
      */
     public static CompletableFuture<Void> allDone(final Collection<? extends CompletableFuture<?>> futures) {
         if (futures == null || futures.isEmpty()) {
@@ -45,7 +44,7 @@ public final class General {
     /**
      * allOf wrapper with empty safe behaviour
      */
-    public static CompletableFuture<Void> all(List<CompletableFuture<?>>tasks) {
+    public static CompletableFuture<Void> all(List<CompletableFuture<?>> tasks) {
         if (tasks.isEmpty()) {
             return CompletableFuture.completedFuture(null);
         }
