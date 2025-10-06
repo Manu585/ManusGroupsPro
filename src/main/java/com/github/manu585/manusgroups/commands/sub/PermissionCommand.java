@@ -109,7 +109,13 @@ public class PermissionCommand extends BaseCommand {
             }
 
             messages.send(sender, "Perm.ListHeader", Msg.str("group", group));
-            map.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(entry -> messages.send(sender, "Perm.ListEntry", Msg.str("node", entry.getKey()), Msg.str("value", String.valueOf(entry.getValue()))));
+
+            map.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(
+                    entry -> messages.send(
+                            sender, "Perm.ListEntry",
+                            Msg.str("node", entry.getKey()),
+                            Msg.str("value", String.valueOf(entry.getValue())))
+            );
         });
     }
 
@@ -124,13 +130,13 @@ public class PermissionCommand extends BaseCommand {
             return Stream.of("add", "remove", "list").filter(s -> s.startsWith(input)).toList();
         }
 
-        final String action = args.getFirst().toLowerCase(Locale.ROOT);
-
         if (args.size() == 2) {
             // group name
             final String input = args.get(1).toLowerCase(Locale.ROOT);
             return catalog.snapshot().keySet().stream().filter(s -> s.startsWith(input)).sorted().toList();
         }
+
+        final String action = args.getFirst().toLowerCase(Locale.ROOT);
 
         if ("add".equals(action)) {
             if (args.size() == 3) {
@@ -138,6 +144,7 @@ public class PermissionCommand extends BaseCommand {
                 final String input = args.get(2).toLowerCase(Locale.ROOT);
                 return Stream.of("essentials.fly", "essentials.god").filter(s -> s.startsWith(input)).toList();
             }
+
             if (args.size() == 4) {
                 final String input = args.get(3).toLowerCase(Locale.ROOT);
                 return Stream.of("true", "false").filter(s -> s.startsWith(input)).toList();
@@ -155,7 +162,6 @@ public class PermissionCommand extends BaseCommand {
                 return nodes.keySet().stream().filter(s -> s.toLowerCase(Locale.ROOT).startsWith(nodePrefix)).sorted().collect(Collectors.toList());
             }
         }
-
         return List.of();
     }
 }
