@@ -19,15 +19,9 @@ public class ChatFormatServiceImpl implements ChatFormatService {
 
         renderer = (source, sourceDisplayName, message, viewer) -> {
             final Component prefix = prefixService.cachedPrefix(source.getUniqueId());
+            final String format = chatFormat.get();
 
-            String format = chatFormat.get();
-            if (format == null || format.isBlank()) {
-                format = "<prefix> <name>: <message>";
-            }
-
-            return MessageService.mm().deserialize(
-                    format,
-                    TagResolver.builder()
+            return MessageService.mm().deserialize(format, TagResolver.builder()
                             .tag("prefix", Tag.inserting(prefix))
                             .tag("name", Tag.inserting(source.name()))
                             .tag("message", Tag.inserting(message))
