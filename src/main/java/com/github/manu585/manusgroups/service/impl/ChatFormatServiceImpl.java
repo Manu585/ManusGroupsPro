@@ -1,18 +1,16 @@
 package com.github.manu585.manusgroups.service.impl;
 
+import com.github.manu585.manusgroups.service.MessageService;
 import com.github.manu585.manusgroups.service.spi.ChatFormatService;
 import com.github.manu585.manusgroups.service.spi.PrefixService;
 import io.papermc.paper.chat.ChatRenderer;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ChatFormatServiceImpl implements ChatFormatService {
-    private static final MiniMessage MM = MiniMessage.miniMessage();
-
     private final AtomicReference<String> chatFormat = new AtomicReference<>();
     private final ChatRenderer renderer;
 
@@ -27,7 +25,7 @@ public class ChatFormatServiceImpl implements ChatFormatService {
                 format = "<prefix> <name>: <message>";
             }
 
-            return MM.deserialize(
+            return MessageService.mm().deserialize(
                     format,
                     TagResolver.builder()
                             .tag("prefix", Tag.inserting(prefix))

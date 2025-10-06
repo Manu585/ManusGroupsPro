@@ -1,10 +1,10 @@
 package com.github.manu585.manusgroups.service.impl;
 
 import com.github.manu585.manusgroups.cache.GroupPlayerCache;
+import com.github.manu585.manusgroups.service.MessageService;
 import com.github.manu585.manusgroups.service.spi.PrefixService;
 import com.github.manu585.manusgroups.util.General;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -17,7 +17,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PrefixServiceImpl implements PrefixService {
-    private static final MiniMessage MM = MiniMessage.miniMessage();
     private final ConcurrentHashMap<UUID, Component> cache = new ConcurrentHashMap<>();
 
     private final JavaPlugin plugin;
@@ -36,7 +35,7 @@ public class PrefixServiceImpl implements PrefixService {
     @Override
     public CompletableFuture<Component> primePrefix(UUID uuid) {
         return players.getOrLoad(uuid).thenApply(groupPlayer -> {
-            final Component component = (groupPlayer.primaryGroup() == null) ? Component.empty() : MM.deserialize(groupPlayer.primaryGroup().prefix());
+            final Component component = (groupPlayer.primaryGroup() == null) ? Component.empty() : MessageService.mm().deserialize(groupPlayer.primaryGroup().prefix());
             cache.put(uuid, component);
 
             return component;
