@@ -3,6 +3,7 @@ package com.github.manu585.manusgroups;
 import com.github.manu585.manusgroups.cache.GroupCatalogCache;
 import com.github.manu585.manusgroups.cache.GroupPermissionCache;
 import com.github.manu585.manusgroups.cache.GroupPlayerCache;
+import com.github.manu585.manusgroups.cache.PrefixCache;
 import com.github.manu585.manusgroups.commands.Commands;
 import com.github.manu585.manusgroups.config.ConfigManager;
 import com.github.manu585.manusgroups.domain.Group;
@@ -46,6 +47,7 @@ public class ManusGroups extends JavaPlugin {
     private GroupCatalogCache groupCatalogCache;
     private GroupPlayerCache groupPlayerCache;
     private GroupPermissionCache groupPermissionCache;
+    private PrefixCache prefixCache;
 
     private ExpiryScheduler expiryScheduler;
 
@@ -161,6 +163,7 @@ public class ManusGroups extends JavaPlugin {
         groupCatalogCache = new GroupCatalogCache(groupRepository);
         groupPlayerCache = new GroupPlayerCache(groupRepository, groupCatalogCache);
         groupPermissionCache = new GroupPermissionCache(groupRepository);
+        prefixCache = new PrefixCache();
     }
 
     private void warmCachesAndFinish(Group defaultGroup) {
@@ -183,8 +186,8 @@ public class ManusGroups extends JavaPlugin {
     private void finishInit() {
         // Services
         messageService = new MessageService(configManager.getLanguageConfig().yaml());
-        prefixService = new PrefixServiceImpl(this, groupPlayerCache);
-        chatFormatService = new ChatFormatServiceImpl(prefixService, configManager.getLanguageConfig().getChatFormat());
+        prefixService = new PrefixServiceImpl(this, groupPlayerCache, prefixCache, messageService);
+        chatFormatService = new ChatFormatServiceImpl(prefixService, configManager.getLanguageConfig().getChatFormat(), messageService);
         permissionService = new PermissionServiceImpl(this, groupPermissionCache, groupPlayerCache);
         signService = new GroupSignServiceImpl(this, groupRepository, groupPlayerCache, messageService);
 

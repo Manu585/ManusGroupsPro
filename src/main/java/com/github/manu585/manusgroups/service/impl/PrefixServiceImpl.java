@@ -1,6 +1,7 @@
 package com.github.manu585.manusgroups.service.impl;
 
 import com.github.manu585.manusgroups.cache.GroupPlayerCache;
+import com.github.manu585.manusgroups.cache.PrefixCache;
 import com.github.manu585.manusgroups.service.MessageService;
 import com.github.manu585.manusgroups.service.spi.PrefixService;
 import com.github.manu585.manusgroups.util.General;
@@ -14,29 +15,30 @@ import org.bukkit.scoreboard.Team;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class PrefixServiceImpl implements PrefixService {
-    private final ConcurrentHashMap<UUID, Component> cache = new ConcurrentHashMap<>();
-
     private final JavaPlugin plugin;
     private final GroupPlayerCache players;
+    private final PrefixCache prefixCache;
+    private final MessageService messages;
 
-    public PrefixServiceImpl(final JavaPlugin plugin, final GroupPlayerCache players) {
+    public PrefixServiceImpl(final JavaPlugin plugin, final GroupPlayerCache players, final PrefixCache prefixCache, final MessageService messages) {
         this.plugin = plugin;
         this.players = players;
+        this.prefixCache = prefixCache;
+        this.messages = messages;
     }
 
     @Override
     public Component cachedPrefix(UUID uuid) {
-        return cache.getOrDefault(uuid, Component.empty());
+        return prefixCache.getOrDefault(uuid);
     }
 
     @Override
     public CompletableFuture<Component> primePrefix(UUID uuid) {
         return players.getOrLoad(uuid).thenApply(groupPlayer -> {
-            final Component component = (groupPlayer.primaryGroup() == null) ? Component.empty() : MessageService.mm().deserialize(groupPlayer.primaryGroup().prefix());
-            cache.put(uuid, component);
+            final Component component = (groupPlayer.primaryGroup() == null) ? Component.empty() : messages.mm().deserialize(groupPlayer.primaryGroup().prefix());
+            prefixCache.put(uuid, component);
 
             return component;
         });
@@ -44,7 +46,7 @@ public class PrefixServiceImpl implements PrefixService {
 
     @Override
     public void invalidate(UUID uuid) {
-        cache.remove(uuid);
+        prefixCache.invalidate(uuid);
     }
 
     @Override

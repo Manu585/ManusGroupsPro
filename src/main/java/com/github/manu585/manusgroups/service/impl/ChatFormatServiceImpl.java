@@ -14,14 +14,14 @@ public class ChatFormatServiceImpl implements ChatFormatService {
     private final AtomicReference<String> chatFormat = new AtomicReference<>();
     private final ChatRenderer renderer;
 
-    public ChatFormatServiceImpl(final PrefixService prefixService, final String initialFormat) {
+    public ChatFormatServiceImpl(final PrefixService prefixService, final String initialFormat, final MessageService messages) {
         this.chatFormat.set(initialFormat);
 
         renderer = (source, sourceDisplayName, message, viewer) -> {
             final Component prefix = prefixService.cachedPrefix(source.getUniqueId());
             final String format = chatFormat.get();
 
-            return MessageService.mm().deserialize(format, TagResolver.builder()
+            return messages.mm().deserialize(format, TagResolver.builder()
                             .tag("prefix", Tag.inserting(prefix))
                             .tag("name", Tag.inserting(source.name()))
                             .tag("message", Tag.inserting(message))

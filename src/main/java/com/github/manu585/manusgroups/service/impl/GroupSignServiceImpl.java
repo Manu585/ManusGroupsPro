@@ -92,7 +92,7 @@ public class GroupSignServiceImpl implements GroupSignService {
         final String playerName = findName(groupPlayer.uuid());
         final Group group = groupPlayer.primaryGroup();
         final String groupName = (group == null) ? DefaultGroup.name() : group.name();
-        final Component prefix = (group == null) ? MessageService.mm().deserialize(DefaultGroup.group().prefix()) : MessageService.mm().deserialize(group.prefix());
+        final Component prefix = (group == null) ? messages.mm().deserialize(DefaultGroup.group().prefix()) : messages.mm().deserialize(group.prefix());
 
         Component l1 = messages.formatToComponent("Signs.Format.Line1", Msg.comp("prefix", prefix), Msg.str("player", playerName), Msg.str("group", groupName));
         Component l2 = messages.formatToComponent("Signs.Format.Line2", Msg.comp("prefix", prefix), Msg.str("player", playerName), Msg.str("group", groupName));

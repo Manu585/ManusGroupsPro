@@ -65,7 +65,7 @@ public class MessageService {
         sender.sendMessage(formatToComponent(key, placeholders));
     }
 
-    public static MiniMessage mm() {
+    public MiniMessage mm() {
         return MM;
     }
 }
