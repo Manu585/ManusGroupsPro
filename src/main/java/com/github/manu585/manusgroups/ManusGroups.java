@@ -64,7 +64,6 @@ public class ManusGroups extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        getLogger().info("Booting up ManusGroupsPro...");
         bootAsync();
     }
 
@@ -78,6 +77,8 @@ public class ManusGroups extends JavaPlugin {
      * =============== */
 
     private void bootAsync() {
+        getLogger().info("Booting up " + getName() + "...");
+
         // Config and Executor Thread Pool instantiation
         configManager = new ConfigManager(this);
         executorService = new DbExecutor();
@@ -240,7 +241,7 @@ public class ManusGroups extends JavaPlugin {
         // Prime players already online
         primeOnlinePlayers();
 
-        getLogger().info("ManusGroupsPro initialized.");
+        getLogger().info(getName() + " initialized.");
     }
 
     private void primeOnlinePlayers() {
