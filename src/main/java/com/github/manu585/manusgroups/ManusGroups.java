@@ -25,10 +25,8 @@ import com.github.manu585.manusgroups.service.impl.GroupSignServiceImpl;
 import com.github.manu585.manusgroups.service.impl.PermissionServiceImpl;
 import com.github.manu585.manusgroups.service.impl.PrefixServiceImpl;
 import com.github.manu585.manusgroups.service.spi.GroupSignService;
-import com.github.manu585.manusgroups.service.util.Msg;
 import com.github.manu585.manusgroups.util.DefaultGroup;
 import com.github.manu585.manusgroups.util.General;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -36,6 +34,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import javax.sql.DataSource;
+import java.util.concurrent.CompletableFuture;
 
 public class ManusGroups extends JavaPlugin {
     private ConfigManager configManager;
@@ -258,7 +257,9 @@ public class ManusGroups extends JavaPlugin {
      * Reload
      * =========== */
 
-    public void reloadAsync(final CommandSender initiator) {
+    public CompletableFuture<Boolean> reloadAsync() {
+        final CompletableFuture<Boolean> result = new CompletableFuture<>();
+
         getServer().getScheduler().runTaskAsynchronously(this, () -> {
             try {
                 // Reload language.yml and rewire MessageService with possibly new values
@@ -279,11 +280,13 @@ public class ManusGroups extends JavaPlugin {
                 // re-prime online users
                 primeOnlinePlayers();
 
-                messageService.send(initiator, "Reload.OK");
+                result.complete(true);
             } catch (Exception e) {
-                messageService.send(initiator, "Reload.Error", Msg.str("error", e.getMessage() == null ? "unknown" : e.getMessage()));
+                result.complete(false);
             }
         });
+
+        return result;
     }
 
     /* ===========

@@ -8,6 +8,7 @@ import com.github.manu585.manusgroups.service.MessageService;
 import com.github.manu585.manusgroups.service.spi.PermissionService;
 import com.github.manu585.manusgroups.service.util.Msg;
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
 import java.util.Locale;
@@ -16,16 +17,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class PermissionCommand extends BaseCommand {
-    private final MessageService messages;
     private final GroupRepository repository;
     private final GroupCatalogCache catalog;
     private final GroupPermissionCache permissionCache;
     private final PermissionService permissionService;
 
-    public PermissionCommand(MessageService messages, GroupRepository repository, GroupCatalogCache catalog, GroupPermissionCache permissionCache, PermissionService permissionService) {
-        super("permission");
+    public PermissionCommand(final JavaPlugin plugin, final MessageService messages, GroupRepository repository, GroupCatalogCache catalog, GroupPermissionCache permissionCache, PermissionService permissionService) {
+        super("permission", plugin, messages);
 
-        this.messages = messages;
         this.repository = repository;
         this.catalog = catalog;
         this.permissionCache = permissionCache;
@@ -35,7 +34,7 @@ public class PermissionCommand extends BaseCommand {
     @Override
     public void execute(CommandSender sender, List<String> args) {
         if (args.isEmpty()) {
-            messages.send(sender, "Usage.Permission");
+            msg(sender, "Usage.Permission");
             return;
         }
 
@@ -44,13 +43,13 @@ public class PermissionCommand extends BaseCommand {
             case "add" -> handleAdd(sender, args);
             case "remove" -> handleRemove(sender, args);
             case "list" -> handleList(sender, args);
-            default -> messages.send(sender, "Usage.Permission");
+            default -> msg(sender, "Usage.Permission");
         }
     }
 
     private void handleAdd(CommandSender sender, List<String> args) {
         if (args.size() < 3) {
-            messages.send(sender, "Usage.PermAdd");
+            msg(sender, "Usage.PermAdd");
             return;
         }
 
@@ -59,19 +58,19 @@ public class PermissionCommand extends BaseCommand {
         final boolean value = (args.size() < 4) || Boolean.parseBoolean(args.get(3));
 
         if (catalog.get(group) == null) {
-            messages.send(sender, "Group.NotFound", Msg.str("name", group));
+            msg(sender, "Group.NotFound", Msg.str("name", group));
             return;
         }
 
         repository.upsertPermission(group, node, value)
                 .thenRun(() -> permissionCache.invalidate(group))
                 .thenCompose(__ -> permissionService.refreshAllForGroup(group))
-                .thenRun(() -> messages.send(sender, "Perm.Added", Msg.str("group", group), Msg.str("node", node), Msg.str("value", String.valueOf(value))));
+                .thenRun(() -> msg(sender, "Perm.Added", Msg.str("group", group), Msg.str("node", node), Msg.str("value", String.valueOf(value))));
     }
 
     private void handleRemove(CommandSender sender, List<String> args) {
         if (args.size() < 3) {
-            messages.send(sender, "Usage.PermRemove");
+            msg(sender, "Usage.PermRemove");
             return;
         }
 
@@ -79,39 +78,39 @@ public class PermissionCommand extends BaseCommand {
         final String node = args.get(2);
 
         if (catalog.get(group) == null) {
-            messages.send(sender, "Group.NotFound", Msg.str("name", group));
+            msg(sender, "Group.NotFound", Msg.str("name", group));
             return;
         }
 
         repository.deletePermission(group, node)
                 .thenRun(() -> permissionCache.invalidate(group))
                 .thenCompose(__ -> permissionService.refreshAllForGroup(group))
-                .thenRun(() -> messages.send(sender, "Perm.Removed", Msg.str("group", group), Msg.str("node", node)));
+                .thenRun(() -> msg(sender, "Perm.Removed", Msg.str("group", group), Msg.str("node", node)));
     }
 
     private void handleList(CommandSender sender, List<String> args) {
         if (args.size() < 2) {
-            messages.send(sender, "Usage.PermList");
+            msg(sender, "Usage.PermList");
             return;
         }
 
         final String group = args.get(1);
 
         if (catalog.get(group) == null) {
-            messages.send(sender, "Group.NotFound", Msg.str("name", group));
+            msg(sender, "Group.NotFound", Msg.str("name", group));
             return;
         }
 
         permissionCache.getOrLoad(group).thenAccept(map -> {
             if (map == null || map.isEmpty()) {
-                messages.send(sender, "Perm.ListEmpty", Msg.str("group", group));
+                msg(sender, "Perm.ListEmpty", Msg.str("group", group));
                 return;
             }
 
-            messages.send(sender, "Perm.ListHeader", Msg.str("group", group));
+            msg(sender, "Perm.ListHeader", Msg.str("group", group));
 
             map.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(
-                    entry -> messages.send(
+                    entry -> msg(
                             sender, "Perm.ListEntry",
                             Msg.str("node", entry.getKey()),
                             Msg.str("value", String.valueOf(entry.getValue())))

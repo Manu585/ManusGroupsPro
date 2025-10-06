@@ -1,6 +1,9 @@
 package com.github.manu585.manusgroups.commands;
 
+import com.github.manu585.manusgroups.service.MessageService;
+import com.github.manu585.manusgroups.service.util.Msg;
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Collections;
 import java.util.List;
@@ -10,9 +13,13 @@ import java.util.List;
  */
 public abstract class BaseCommand implements SubCommand {
     private final String name;
+    protected final JavaPlugin plugin;
+    protected final MessageService messages;
 
-    public BaseCommand(String name) {
+    public BaseCommand(final String name, final JavaPlugin plugin, final MessageService messages) {
         this.name = name;
+        this.plugin = plugin;
+        this.messages = messages;
     }
 
     @Override
@@ -23,5 +30,9 @@ public abstract class BaseCommand implements SubCommand {
     @Override
     public List<String> tab(CommandSender sender, List<String> args) {
         return Collections.emptyList();
+    }
+
+    protected void msg(CommandSender sender, String key, Msg... placeholders) {
+        messages.send(sender, key, placeholders);
     }
 }

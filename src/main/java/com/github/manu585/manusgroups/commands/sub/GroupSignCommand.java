@@ -10,6 +10,7 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
 import java.util.Locale;
@@ -19,14 +20,12 @@ import java.util.stream.Stream;
 import static com.github.manu585.manusgroups.util.General.isSign;
 
 public class GroupSignCommand extends BaseCommand {
-    private final MessageService messages;
     private final GroupSignService signs;
     private final SignSelectionManager selectionManager;
 
-    public GroupSignCommand(MessageService messages, GroupSignService signs, SignSelectionManager selectionManager) {
-        super("sign");
+    public GroupSignCommand(final JavaPlugin plugin, final MessageService messages, final GroupSignService signs, final SignSelectionManager selectionManager) {
+        super("sign", plugin, messages);
 
-        this.messages = messages;
         this.signs = signs;
         this.selectionManager = selectionManager;
     }
@@ -34,31 +33,31 @@ public class GroupSignCommand extends BaseCommand {
     @Override
     public void execute(CommandSender sender, List<String> args) {
         if (args.isEmpty()) {
-            messages.send(sender, "Usage.Sign");
+            msg(sender, "Usage.Sign");
             return;
         }
 
         switch (args.getFirst().toLowerCase(Locale.ROOT)) {
             case "bind" -> handleBind(sender, args);
             case "unbind" -> handleUnbind(sender);
-            default -> messages.send(sender, "Usage.Sign");
+            default -> msg(sender, "Usage.Sign");
         }
     }
 
     private void handleBind(CommandSender sender, List<String> args) {
         if (!(sender instanceof Player player)) {
-            messages.send(sender, "Errors.PlayerNotOnline", Msg.str("player", "console"));
+            msg(sender, "Errors.PlayerNotOnline", Msg.str("player", "console"));
             return;
         }
 
         if (args.size() < 2) {
-            messages.send(sender, "Usage.Sign");
+            msg(sender, "Usage.Sign");
             return;
         }
 
         final Player target = Bukkit.getPlayerExact(args.get(1));
         if (target == null) {
-            messages.send(sender, "Errors.PlayerNotOnline", Msg.str("player", args.get(1)));
+            msg(sender, "Errors.PlayerNotOnline", Msg.str("player", args.get(1)));
             return;
         }
 
@@ -67,28 +66,28 @@ public class GroupSignCommand extends BaseCommand {
         if (isSign(looked)) {
             final Location loc = looked.getLocation();
             signs.bind(loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), target.getUniqueId())
-                    .thenRun(() -> messages.send(sender, "Sign.Bound", Msg.str("player", target.getName())));
+                    .thenRun(() -> msg(sender, "Sign.Bound", Msg.str("player", target.getName())));
         } else {
             selectionManager.select(player.getUniqueId(), target.getUniqueId());
-            messages.send(sender, "Sign.Arm", Msg.str("player", target.getName()));
+            msg(sender, "Sign.Arm", Msg.str("player", target.getName()));
         }
     }
 
     private void handleUnbind(CommandSender sender) {
         if (!(sender instanceof Player player)) {
-            messages.send(sender, "Errors.PlayerNotOnline", Msg.str("player", "console"));
+            msg(sender, "Errors.PlayerNotOnline", Msg.str("player", "console"));
             return;
         }
 
         final Block block = player.getTargetBlockExact(6);
         if (!isSign(block)) {
-            messages.send(sender, "Errors.LookAtSign");
+            msg(sender, "Errors.LookAtSign");
             return;
         }
 
         final Location loc = block.getLocation();
         signs.unbind(loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ())
-                .thenAccept(removed -> messages.send(sender, removed ? "Sign.Unbound" : "Sign.NotFound"));
+                .thenAccept(removed -> msg(sender, removed ? "Sign.Unbound" : "Sign.NotFound"));
     }
 
     @Override

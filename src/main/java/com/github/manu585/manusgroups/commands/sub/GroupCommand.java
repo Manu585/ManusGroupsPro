@@ -12,6 +12,7 @@ import com.github.manu585.manusgroups.util.Durations;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -22,14 +23,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class GroupCommand extends BaseCommand {
-    private final MessageService messages;
     private final GroupService groupService;
     private final GroupCatalogCache catalog;
     private final GroupRepository repository;
 
-    public GroupCommand(MessageService messages, GroupService groupService, GroupCatalogCache catalog, GroupRepository repository) {
-        super("group");
-        this.messages = messages;
+    public GroupCommand(final JavaPlugin plugin, final MessageService messages, GroupService groupService, GroupCatalogCache catalog, GroupRepository repository) {
+        super("group", plugin, messages);
+
         this.groupService = groupService;
         this.catalog = catalog;
         this.repository = repository;
@@ -38,11 +38,7 @@ public class GroupCommand extends BaseCommand {
     @Override
     public void execute(CommandSender sender, List<String> args) {
         if (args.isEmpty()) {
-            messages.send(sender, "Usage.Create");
-            messages.send(sender, "Usage.Delete");
-            messages.send(sender, "Usage.Info");
-            messages.send(sender, "Usage.Grant");
-            messages.send(sender, "Usage.Revoke");
+            sendUsages(sender);
             return;
         }
 
@@ -54,18 +50,22 @@ public class GroupCommand extends BaseCommand {
             case "grant"  -> handleGrant(sender, args);
             case "revoke" -> handleRevoke(sender, args);
             default -> {
-                messages.send(sender, "Usage.Create");
-                messages.send(sender, "Usage.Delete");
-                messages.send(sender, "Usage.Info");
-                messages.send(sender, "Usage.Grant");
-                messages.send(sender, "Usage.Revoke");
+                sendUsages(sender);
             }
         }
     }
 
+    private void sendUsages(CommandSender sender) {
+        msg(sender, "Usage.Create");
+        msg(sender, "Usage.Delete");
+        msg(sender, "Usage.Info");
+        msg(sender, "Usage.Grant");
+        msg(sender, "Usage.Revoke");
+    }
+
     private void handleCreate(CommandSender sender, List<String> args) {
         if (args.size() < 4) {
-            messages.send(sender, "Usage.Create");
+            msg(sender, "Usage.Create");
             return;
         }
 
@@ -74,29 +74,29 @@ public class GroupCommand extends BaseCommand {
         try {
             weight = Integer.parseInt(args.get(2));
         } catch (NumberFormatException exception) {
-            messages.send(sender, "Errors.BadNumber", Msg.str("value", args.get(2)));
+            msg(sender, "Errors.BadNumber", Msg.str("value", args.get(2)));
             return;
         }
 
         final String prefix = String.join(" ", args.subList(3, args.size()));
         final Group group = new Group(groupName, prefix, weight, false);
 
-        groupService.upsertGroup(group).thenRun(() -> messages.send(sender, "Group.CreatedOrUpdated", Msg.str("name", groupName)));
+        groupService.upsertGroup(group).thenRun(() -> msg(sender, "Group.CreatedOrUpdated", Msg.str("name", groupName)));
     }
 
     private void handleDelete(CommandSender sender, List<String> args) {
         if (args.size() < 2) {
-            messages.send(sender, "Usage.Delete");
+            msg(sender, "Usage.Delete");
             return;
         }
 
         final String groupName = args.get(1);
         if (catalog.get(groupName) == null) {
-            messages.send(sender, "Group.NotFound", Msg.str("name", groupName));
+            msg(sender, "Group.NotFound", Msg.str("name", groupName));
             return;
         }
 
-        groupService.deleteGroupByReassigning(groupName).thenRun(() -> messages.send(sender, "Group.Deleted", Msg.str("name", groupName)));
+        groupService.deleteGroupByReassigning(groupName).thenRun(() -> msg(sender, "Group.Deleted", Msg.str("name", groupName)));
     }
 
     private void handleInfo(CommandSender sender, List<String> args) {
@@ -105,14 +105,14 @@ public class GroupCommand extends BaseCommand {
 
         if (self) {
             if (!(sender instanceof Player player)) {
-                messages.send(sender, "Errors.PlayerNotOnline", Msg.str("player", "console"));
+                msg(sender, "Errors.PlayerNotOnline", Msg.str("player", "console"));
                 return;
             }
             target = player;
         } else {
             target = Bukkit.getPlayerExact(args.get(1));
             if (target == null) {
-                messages.send(sender, "Errors.PlayerNotOnline", Msg.str("player", args.get(1)));
+                msg(sender, "Errors.PlayerNotOnline", Msg.str("player", args.get(1)));
                 return;
             }
         }
@@ -130,28 +130,28 @@ public class GroupCommand extends BaseCommand {
             }
 
             if (self) {
-                messages.send(sender, "Info.Self", Msg.str("group", groupName), Msg.str("remaining", remaining));
+                msg(sender, "Info.Self", Msg.str("group", groupName), Msg.str("remaining", remaining));
             } else {
-                messages.send(sender, "Info.Other", Msg.str("player", target.getName()), Msg.str("group", groupName), Msg.str("remaining", remaining));
+                msg(sender, "Info.Other", Msg.str("player", target.getName()), Msg.str("group", groupName), Msg.str("remaining", remaining));
             }
         });
     }
 
     private void handleGrant(CommandSender sender, List<String> args) {
         if (args.size() < 3) {
-            messages.send(sender, "Errors.PlayerNotOnline", Msg.str("player", args.get(1)));
+            msg(sender, "Errors.PlayerNotOnline", Msg.str("player", args.get(1)));
             return;
         }
 
         final Player target = Bukkit.getPlayerExact(args.get(1));
         if (target == null) {
-            messages.send(sender, "Errors.PlayerNotOnline", Msg.str("player", args.get(1)));
+            msg(sender, "Errors.PlayerNotOnline", Msg.str("player", args.get(1)));
             return;
         }
 
         final String groupName = args.get(2);
         if (catalog.get(groupName) == null) {
-            messages.send(sender, "Group.NotFound", Msg.str("name", groupName));
+            msg(sender, "Group.NotFound", Msg.str("name", groupName));
             return;
         }
 
@@ -160,7 +160,7 @@ public class GroupCommand extends BaseCommand {
             try {
                 duration = Durations.parse(args.get(3));
             } catch (IllegalArgumentException e) {
-                messages.send(sender, "Errors.BadNumber", Msg.str("value", args.get(3)));
+                msg(sender, "Errors.BadNumber", Msg.str("value", args.get(3)));
                 return;
             }
         }
@@ -168,19 +168,19 @@ public class GroupCommand extends BaseCommand {
         final Duration finalDuration = duration;
         groupService.setGroup(target.getUniqueId(), groupName, duration).thenRun(() -> {
             final boolean perm = (finalDuration == null);
-            messages.send(sender, "Assign.Granted", Msg.str("player", target.getName()), Msg.str("group", groupName), Msg.permanent(perm));
+            msg(sender, "Assign.Granted", Msg.str("player", target.getName()), Msg.str("group", groupName), Msg.permanent(perm));
         });
     }
 
     private void handleRevoke(CommandSender sender, List<String> args) {
         if (args.size() < 2) {
-            messages.send(sender, "Usage.Revoke");
+            msg(sender, "Usage.Revoke");
             return;
         }
 
         final Player target = Bukkit.getPlayerExact(args.get(1));
         if (target == null) {
-            messages.send(sender, "Errors.PlayerNotOnline", Msg.str("player", args.get(1)));
+            msg(sender, "Errors.PlayerNotOnline", Msg.str("player", args.get(1)));
             return;
         }
 
@@ -188,11 +188,11 @@ public class GroupCommand extends BaseCommand {
             final String currentGroup = (groupPlayer.getPrimaryGroup() == null) ? DefaultGroup.name() : groupPlayer.getPrimaryGroup().name();
 
             if (currentGroup.equalsIgnoreCase(DefaultGroup.name())) {
-                messages.send(sender, "Assign.NoChange", Msg.str("player", target.getName()), Msg.str("group", DefaultGroup.name()));
+                msg(sender, "Assign.NoChange", Msg.str("player", target.getName()), Msg.str("group", DefaultGroup.name()));
                 return CompletableFuture.completedFuture(null);
             }
 
-            return groupService.clearToDefault(target.getUniqueId()).thenRun(() -> messages.send(sender, "Assign.Revoked", Msg.str("player", target.getName()), Msg.str("group", currentGroup)));
+            return groupService.clearToDefault(target.getUniqueId()).thenRun(() -> msg(sender, "Assign.Revoked", Msg.str("player", target.getName()), Msg.str("group", currentGroup)));
         });
     }
 

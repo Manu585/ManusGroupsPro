@@ -33,10 +33,10 @@ public class Commands implements CommandExecutor, TabCompleter {
             GroupSignService signService,
             SignSelectionManager selectionManager)
     {
-        register(new GroupCommand(messageService, service, groupCatalog, repository));
-        register(new ReloadCommand(plugin));
-        register(new PermissionCommand(messageService, repository, groupCatalog, permissionCache, permissionService));
-        register(new GroupSignCommand(messageService, signService, selectionManager));
+        register(new GroupCommand(plugin, messageService, service, groupCatalog, repository));
+        register(new ReloadCommand(plugin, messageService));
+        register(new PermissionCommand(plugin, messageService, repository, groupCatalog, permissionCache, permissionService));
+        register(new GroupSignCommand(plugin, messageService, signService, selectionManager));
 
         final PluginCommand groupCommand = plugin.getCommand("groups");
         if (groupCommand == null) return;
