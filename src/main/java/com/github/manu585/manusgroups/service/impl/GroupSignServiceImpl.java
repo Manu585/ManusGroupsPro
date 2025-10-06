@@ -3,6 +3,7 @@ package com.github.manu585.manusgroups.service.impl;
 import com.github.manu585.manusgroups.cache.GroupPlayerCache;
 import com.github.manu585.manusgroups.domain.Group;
 import com.github.manu585.manusgroups.domain.GroupPlayer;
+import com.github.manu585.manusgroups.domain.SignRecord;
 import com.github.manu585.manusgroups.repo.GroupRepository;
 import com.github.manu585.manusgroups.service.MessageService;
 import com.github.manu585.manusgroups.service.spi.GroupSignService;
@@ -18,6 +19,8 @@ import org.bukkit.block.sign.Side;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -62,8 +65,15 @@ public class GroupSignServiceImpl implements GroupSignService {
     @Override
     public void refreshFor(UUID target) {
         repository.listSignsByTarget(target).thenCompose(list -> {
-            CompletableFuture<?>[] all = list.stream().map(record -> renderAt(plugin.getServer().getWorld(record.world()), record.x(), record.y(), record.z(), record.target())).toArray(CompletableFuture[]::new);
-            return all.length == 0 ? CompletableFuture.completedFuture(null) : CompletableFuture.allOf(all);
+            final List<CompletableFuture<Void>> tasks = new ArrayList<>();
+
+            for (SignRecord signRecord : list) {
+                final World world = plugin.getServer().getWorld(signRecord.world());
+                if (world == null) continue;
+                tasks.add(renderAt(world, signRecord.x(), signRecord.y(), signRecord.z(), signRecord.target()));
+            }
+
+            return General.allDone(tasks);
         });
     }
 
@@ -72,15 +82,15 @@ public class GroupSignServiceImpl implements GroupSignService {
             return CompletableFuture.completedFuture(null);
         }
 
-        return players.getOrLoad(target).thenCompose(groupPlayer -> runMain(() -> applyToBlock(world, x, y, z, groupPlayer)));
+        return players.getOrLoad(target).thenCompose(groupPlayer -> General.runMain(plugin, (() -> applyToBlock(world, x, y, z, groupPlayer))));
     }
 
     private void applyToBlock(World world, int x, int y, int z, GroupPlayer groupPlayer) {
         final Block block = world.getBlockAt(x, y, z);
         if (!(block.getState() instanceof Sign sign)) return;
 
-        final String playerName = findName(groupPlayer.getUuid());
-        final Group group = groupPlayer.getPrimaryGroup();
+        final String playerName = findName(groupPlayer.uuid());
+        final Group group = groupPlayer.primaryGroup();
         final String groupName = (group == null) ? DefaultGroup.name() : group.name();
         final Component prefix = (group == null) ? messages.mm().deserialize(DefaultGroup.group().prefix()) : messages.mm().deserialize(group.prefix());
 
@@ -97,16 +107,16 @@ public class GroupSignServiceImpl implements GroupSignService {
     }
 
     private CompletableFuture<Void> ensureSignAt(World world, int x, int y, int z) {
-        return runMain(() -> {
+        return General.runMain(plugin, (() -> {
             Block block = world.getBlockAt(x, y, z);
             if (!(block.getState() instanceof Sign)) {
                 block.setType(Material.OAK_SIGN, false);
             }
-        });
+        }));
     }
 
     private CompletableFuture<Void> clearTextAt(World world, int x, int y, int z) {
-        return runMain(() -> {
+        return General.runMain(plugin, (() -> {
             Block block = world.getBlockAt(x, y, z);
             if (block.getState() instanceof Sign sign) {
                 for (int i = 0; i < 4; i++) {
@@ -114,24 +124,11 @@ public class GroupSignServiceImpl implements GroupSignService {
                 }
                 sign.update(true, false);
             }
-        });
+        }));
     }
 
     private String findName(UUID uuid) {
         final Player player = plugin.getServer().getPlayer(uuid);
         return (player != null) ? player.getName() : uuid.toString();
-    }
-
-    private CompletableFuture<Void> runMain(Runnable r) {
-        final CompletableFuture<Void> future = new CompletableFuture<>();
-        General.runSync(plugin, () -> {
-            try {
-                r.run();
-                future.complete(null);
-            } catch (Throwable t) {
-                future.completeExceptionally(t);
-            }
-        });
-        return future;
     }
 }

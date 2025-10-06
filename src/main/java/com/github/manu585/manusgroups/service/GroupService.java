@@ -127,7 +127,7 @@ public class GroupService {
                     for (UUID uuid : affected) {
                         ops.add(setGroup(uuid, DefaultGroup.name(), null));
                     }
-                    return all(ops);
+                    return General.all(ops);
                 })
                 .thenCompose(__ -> repository.deleteGroup(groupName))
                 .thenRun(() -> catalog.invalidate(groupName));
@@ -196,7 +196,7 @@ public class GroupService {
             tasks.add(refreshPlayerSnapshot(uuid).thenCompose(__ -> refreshPlayerUi(uuid)));
         }
 
-        return all(tasks);
+        return General.allDone(tasks);
     }
 
 
@@ -208,17 +208,6 @@ public class GroupService {
      */
     private void fireGroupChange(UUID user, @Nullable Group group) {
         runOnMain(() -> plugin.getServer().getPluginManager().callEvent(new GroupChangeEvent(user, group)));
-    }
-
-    /**
-     * allOf wrapper with empty safe behaviour
-     */
-    private static CompletableFuture<Void> all(List<CompletableFuture<?>> tasks) {
-        if (tasks.isEmpty()) {
-            return CompletableFuture.completedFuture(null);
-        }
-
-        return CompletableFuture.allOf(tasks.toArray(CompletableFuture[]::new));
     }
 
     /**

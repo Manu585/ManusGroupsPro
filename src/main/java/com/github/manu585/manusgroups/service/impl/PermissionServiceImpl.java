@@ -33,12 +33,12 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public CompletableFuture<Void> applyFor(UUID user, String groupName) {
-        return permissionCache.getOrLoad(groupName).thenCompose(nodes -> runMain(() -> applyNow(user, nodes)));
+        return permissionCache.getOrLoad(groupName).thenCompose(nodes -> General.runMain(plugin, () -> applyNow(user, nodes)));
     }
 
     @Override
     public CompletableFuture<Void> clear(UUID user) {
-        return runMain(() -> {
+        return General.runMain(plugin, (() -> {
             final PermissionAttachment attachment = attachments.remove(user);
             final Player player = plugin.getServer().getPlayer(user);
 
@@ -46,7 +46,7 @@ public class PermissionServiceImpl implements PermissionService {
                 player.removeAttachment(attachment);
                 player.recalculatePermissions();
             }
-        });
+        }));
     }
 
     @Override
@@ -61,7 +61,7 @@ public class PermissionServiceImpl implements PermissionService {
             tasks.add(applyFor(player.getUniqueId(), groupName));
         }
 
-        return tasks.isEmpty() ? CompletableFuture.completedFuture(null) : CompletableFuture.allOf(tasks.toArray(CompletableFuture[]::new));
+        return General.allDone(tasks);
     }
 
     /**
@@ -70,11 +70,11 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public CompletableFuture<Void> refreshFor(UUID user) {
         return playerCache.getOrLoad(user).thenCompose(groupPlayer -> {
-            if (groupPlayer.getPrimaryGroup() == null) {
+            if (groupPlayer.primaryGroup() == null) {
                 return clear(user);
             }
 
-            final String groupName = groupPlayer.getPrimaryGroup().name();
+            final String groupName = groupPlayer.primaryGroup().name();
             return applyFor(user, groupName);
         });
     }
@@ -107,19 +107,5 @@ public class PermissionServiceImpl implements PermissionService {
 
         player.recalculatePermissions();
         player.updateCommands();
-    }
-
-    private CompletableFuture<Void> runMain(Runnable r) {
-        final CompletableFuture<Void> future = new CompletableFuture<>();
-        General.runSync(plugin, () -> {
-            try {
-                r.run();
-                future.complete(null);
-            } catch (Throwable t) {
-                future.completeExceptionally(t);
-            }
-        });
-
-        return future;
     }
 }

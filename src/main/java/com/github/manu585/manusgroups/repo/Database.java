@@ -23,9 +23,9 @@ public final class Database implements AutoCloseable {
 
     public void init(final String host, final int port, final String database, final String username, final String password) {
         plugin.getLogger().info("Initiating HikariCP Database...");
-        String connectionUrl = "jdbc:mariadb://" + host + ":" + port + "/" + database + "?useUnicode=true";
+        final String connectionUrl = "jdbc:mariadb://" + host + ":" + port + "/" + database + "?useUnicode=true";
 
-        HikariConfig hikariConfig = getHikariConfig(username, password, connectionUrl);
+        final HikariConfig hikariConfig = getHikariConfig(username, password, connectionUrl);
 
         hikariConfig.addDataSourceProperty("cachePrepStmts", true);
         hikariConfig.addDataSourceProperty("prepStmtCacheSize", "250");
@@ -48,8 +48,8 @@ public final class Database implements AutoCloseable {
         plugin.getLogger().info("Started Async DB migration process...");
 
         return executor.run(() -> {
-            try (Connection connection = get();
-                 Statement statement = connection.createStatement()) {
+            try (final Connection connection = get();
+                 final Statement statement = connection.createStatement()) {
                 // USERS
                 statement.execute("""
                         CREATE TABLE IF NOT EXISTS `users` (
@@ -124,7 +124,7 @@ public final class Database implements AutoCloseable {
         }));
     }
 
-    private HikariConfig getHikariConfig(String username, String password, String connectionUrl) {
+    private HikariConfig getHikariConfig(final String username, final String password, final String connectionUrl) {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setPoolName("ManusGroupsPro-DB-Pool");
         hikariConfig.setDriverClassName("org.mariadb.jdbc.Driver");

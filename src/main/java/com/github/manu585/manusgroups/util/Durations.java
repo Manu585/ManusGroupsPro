@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
  * Helper class that utilizes Regex to parse time correctly
  */
 public final class Durations {
-    private static final Pattern TOKEN = Pattern.compile("(\\d+)([DHMSdhms])");
+    private static final Pattern REGEX = Pattern.compile("(\\d+)([DHMSdhms])");
 
     private Durations() {}
 
@@ -18,7 +18,7 @@ public final class Durations {
         String s = input.trim().toLowerCase(Locale.ROOT);
         if (s.isEmpty()) throw new IllegalArgumentException("empty");
 
-        Matcher matcher = TOKEN.matcher(s);
+        Matcher matcher = REGEX.matcher(s);
         int pos = 0;
         Duration total = Duration.ZERO;
 

@@ -36,7 +36,7 @@ public class PrefixServiceImpl implements PrefixService {
     @Override
     public CompletableFuture<Component> primePrefix(UUID uuid) {
         return players.getOrLoad(uuid).thenApply(groupPlayer -> {
-            final Component component = (groupPlayer.getPrimaryGroup() == null) ? Component.empty() : MM.deserialize(groupPlayer.getPrimaryGroup().prefix());
+            final Component component = (groupPlayer.primaryGroup() == null) ? Component.empty() : MM.deserialize(groupPlayer.primaryGroup().prefix());
             cache.put(uuid, component);
 
             return component;

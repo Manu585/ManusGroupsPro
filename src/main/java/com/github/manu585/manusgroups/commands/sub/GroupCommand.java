@@ -185,7 +185,7 @@ public class GroupCommand extends BaseCommand {
         }
 
         groupService.load(target.getUniqueId()).thenCompose(groupPlayer -> {
-            final String currentGroup = (groupPlayer.getPrimaryGroup() == null) ? DefaultGroup.name() : groupPlayer.getPrimaryGroup().name();
+            final String currentGroup = (groupPlayer.primaryGroup() == null) ? DefaultGroup.name() : groupPlayer.primaryGroup().name();
 
             if (currentGroup.equalsIgnoreCase(DefaultGroup.name())) {
                 msg(sender, "Assign.NoChange", Msg.str("player", target.getName()), Msg.str("group", DefaultGroup.name()));

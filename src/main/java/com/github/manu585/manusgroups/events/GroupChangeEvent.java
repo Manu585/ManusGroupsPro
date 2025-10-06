@@ -1,6 +1,7 @@
 package com.github.manu585.manusgroups.events;
 
 import com.github.manu585.manusgroups.domain.Group;
+import com.github.manu585.manusgroups.util.DefaultGroup;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
@@ -33,6 +34,6 @@ public class GroupChangeEvent extends Event {
     }
 
     public @Nullable Group getNewGroup() {
-        return newGroup;
+        return (newGroup == null) ? DefaultGroup.group() : newGroup;
     }
 }

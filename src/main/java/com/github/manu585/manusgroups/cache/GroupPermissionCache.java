@@ -1,6 +1,7 @@
 package com.github.manu585.manusgroups.cache;
 
 import com.github.manu585.manusgroups.repo.GroupRepository;
+import com.github.manu585.manusgroups.util.General;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +40,7 @@ public final class GroupPermissionCache {
             tasks.add(getOrLoad(group));
         }
 
-        return tasks.isEmpty() ? CompletableFuture.completedFuture(null) : CompletableFuture.allOf(tasks.toArray(CompletableFuture[]::new));
+        return General.allDone(tasks);
     }
 
     public Map<String, Boolean> getIfPresent(final String groupName) {

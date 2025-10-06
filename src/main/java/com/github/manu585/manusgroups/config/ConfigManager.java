@@ -4,6 +4,7 @@ import com.github.manu585.manusgroups.ManusGroups;
 import com.github.manu585.manusgroups.config.configs.LanguageConfig;
 import com.github.manu585.manusgroups.config.configs.MainConfig;
 import com.github.manu585.manusgroups.repo.DbExecutor;
+import com.github.manu585.manusgroups.util.General;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,7 @@ public final class ConfigManager {
             futures.add(config.prepareAsync(executor));
         }
 
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        return General.allDone(futures);
     }
 
     public MainConfig getMainConfig() {
