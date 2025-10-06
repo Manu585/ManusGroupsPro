@@ -73,7 +73,7 @@ public final class LanguageConfig extends BaseYamlConfig {
         yaml.addDefault("Sign.Unbound",  "<yellow>Sign unbound.</yellow>");
         yaml.addDefault("Sign.NotFound", "<red>No sign binding found here.</red>");
         yaml.addDefault("Sign.Error",    "<red>Sign operation failed:</red> <error>");
-        yaml.addDefault("Sign.Arm",      "<yellow>Ready:</yellow> <gray>Shift+Right-Click a sign</gray> <yellow>to bind it to</yellow> <gray><player></gray> <yellow>within 60s.</yellow>");
+        yaml.addDefault("Sign.Arm",      "<yellow>Ready:</yellow> <gray>Shift+Left-Click a sign</gray> <yellow>to bind it to</yellow> <gray><player></gray> <yellow>within 60s.</yellow>");
 
         // Signs (lines)
         yaml.addDefault("Signs.Format.Line1", "<prefix>");
