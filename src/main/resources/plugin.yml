@@ -14,6 +14,18 @@ commands:
     permission-message: You do not have permission to execute this command!
     usage: /groups
 
+permissions:
+  groups.*:
+    description: All ManusGroups permissions
+    default: op
+    children:
+      groups.use: true
+      groups.admin: true
+
+  groups.use:
+    description: User command
+    default: false
+
 libraries:
   - com.zaxxer:HikariCP:7.0.2
   - org.mariadb.jdbc:mariadb-java-client:3.5.6
