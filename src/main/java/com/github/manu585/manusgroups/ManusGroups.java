@@ -25,7 +25,10 @@ import com.github.manu585.manusgroups.service.impl.ChatFormatServiceImpl;
 import com.github.manu585.manusgroups.service.impl.GroupSignServiceImpl;
 import com.github.manu585.manusgroups.service.impl.PermissionServiceImpl;
 import com.github.manu585.manusgroups.service.impl.PrefixServiceImpl;
+import com.github.manu585.manusgroups.service.spi.ChatFormatService;
 import com.github.manu585.manusgroups.service.spi.GroupSignService;
+import com.github.manu585.manusgroups.service.spi.PermissionService;
+import com.github.manu585.manusgroups.service.spi.PrefixService;
 import com.github.manu585.manusgroups.util.DefaultGroup;
 import com.github.manu585.manusgroups.util.General;
 import org.bukkit.entity.Player;
@@ -53,9 +56,9 @@ public class ManusGroups extends JavaPlugin {
 
     private GroupService groupService;
 
-    private PrefixServiceImpl prefixService;
-    private ChatFormatServiceImpl chatFormatService;
-    private PermissionServiceImpl permissionService;
+    private PrefixService prefixService;
+    private ChatFormatService chatFormatService;
+    private PermissionService permissionService;
     private GroupSignService signService;
 
     private MessageService messageService;
@@ -355,15 +358,15 @@ public class ManusGroups extends JavaPlugin {
         return groupService;
     }
 
-    public PrefixServiceImpl getPrefixService() {
+    public PrefixService getPrefixService() {
         return prefixService;
     }
 
-    public ChatFormatServiceImpl getChatFormatService() {
+    public ChatFormatService getChatFormatService() {
         return chatFormatService;
     }
 
-    public PermissionServiceImpl getPermissionService() {
+    public PermissionService getPermissionService() {
         return permissionService;
     }
 
