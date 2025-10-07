@@ -27,7 +27,9 @@ class PermissionExpanderTest {
         final Map<String, Boolean> out = PermissionExpander.expand(raw, registered);
 
         // Every registered permission should be present and true
-        assertThat(out).containsEntry("essentials.fly", true).containsEntry("test.test", true).containsEntry("foo.bar", true);
+        assertThat(out).containsEntry("essentials.fly", true);
+        assertThat(out).containsEntry("test.test", true);
+        assertThat(out).containsEntry("foo.bar", true);
 
         // And nothing extra should appear
         assertThat(out).hasSize(3);
@@ -73,7 +75,9 @@ class PermissionExpanderTest {
 
         final Map<String, Boolean> out = PermissionExpander.expand(raw, registered);
 
-        assertThat(out).containsEntry("foo.bar", false).containsEntry("bar.foo", false).hasSize(2);
+        assertThat(out).containsEntry("foo.bar", false);
+        assertThat(out).containsEntry("bar.foo", false);
+        assertThat(out).hasSize(2);
     }
 
     @Test
