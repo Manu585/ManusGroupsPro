@@ -40,7 +40,7 @@ public final class GroupPermissionCache {
             tasks.add(getOrLoad(group));
         }
 
-        return General.all(tasks);
+        return General.allDone(tasks);
     }
 
     public Map<String, Boolean> getIfPresent(final String groupName) {

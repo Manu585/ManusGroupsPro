@@ -42,17 +42,6 @@ public final class General {
         return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
     }
 
-    /**
-     * allOf wrapper with empty safe behaviour
-     */
-    public static CompletableFuture<Void> all(List<CompletableFuture<?>> tasks) {
-        if (tasks.isEmpty()) {
-            return CompletableFuture.completedFuture(null);
-        }
-
-        return CompletableFuture.allOf(tasks.toArray(CompletableFuture[]::new));
-    }
-
     public static boolean isSign(Block block) {
         if (block == null) return false;
         if (block.getState() instanceof Sign) return true;

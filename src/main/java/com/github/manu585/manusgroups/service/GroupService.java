@@ -127,7 +127,7 @@ public class GroupService {
                     for (UUID uuid : affected) {
                         ops.add(setGroup(uuid, DefaultGroup.name(), null));
                     }
-                    return General.all(ops);
+                    return General.allDone(ops);
                 })
                 .thenCompose(__ -> repository.deleteGroup(groupName))
                 .thenRun(() -> catalog.invalidate(groupName));
