@@ -24,7 +24,7 @@ public final class GroupCatalogCache {
     public CompletableFuture<Void> warmAll() {
         return repository.listGroups().thenAccept(groups -> {
             cache.clear();
-            for (Group group : groups) {
+            for (final Group group : groups) {
                 cache.put(group.name(), group);
             }
         });

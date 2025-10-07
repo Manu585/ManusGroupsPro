@@ -36,7 +36,7 @@ public final class GroupPermissionCache {
 
     public CompletableFuture<Void> warmAll(Iterable<String> groupNames) {
         final List<CompletableFuture<?>> tasks = new ArrayList<>();
-        for (String group : groupNames) {
+        for (final String group : groupNames) {
             tasks.add(getOrLoad(group));
         }
 

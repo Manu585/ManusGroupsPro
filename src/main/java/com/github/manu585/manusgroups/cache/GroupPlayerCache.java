@@ -39,7 +39,7 @@ public final class GroupPlayerCache {
             final String groupName = (finalAssignment == null) ? DefaultGroup.name() : finalAssignment.groupName();
 
             // Build snapshot and cache
-            GroupPlayer fresh = GroupPlayer.from(user, groupName, catalogCache::get);
+            final GroupPlayer fresh = GroupPlayer.from(user, groupName, catalogCache::get);
             cache.put(user, fresh);
             return fresh;
         });
