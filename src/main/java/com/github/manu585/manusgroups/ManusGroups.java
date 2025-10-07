@@ -313,6 +313,10 @@ public class ManusGroups extends JavaPlugin {
             expiryScheduler.stop();
         }
 
+        if (selectionManager != null) {
+            selectionManager.clearAll();
+        }
+
         HandlerList.unregisterAll();
     }
 

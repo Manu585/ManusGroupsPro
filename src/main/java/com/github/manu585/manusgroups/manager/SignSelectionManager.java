@@ -35,6 +35,10 @@ public class SignSelectionManager {
         selections.remove(initiator);
     }
 
+    public void clearAll() {
+        selections.clear();
+    }
+
     private static final class Selection {
         final UUID target;
         final long expiresAtMs;
