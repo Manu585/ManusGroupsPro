@@ -4,7 +4,6 @@ import com.github.manu585.manusgroups.domain.Group;
 import com.github.manu585.manusgroups.repo.jdbc.JdbcHelper;
 
 import javax.sql.DataSource;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 

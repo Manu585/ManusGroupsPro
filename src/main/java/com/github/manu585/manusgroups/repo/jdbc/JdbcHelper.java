@@ -1,14 +1,10 @@
 package com.github.manu585.manusgroups.repo.jdbc;
 
-import com.github.manu585.manusgroups.util.Uuids;
-
 import javax.sql.DataSource;
 import java.sql.*;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public abstract class JdbcHelper {
     protected final DataSource dataSource;

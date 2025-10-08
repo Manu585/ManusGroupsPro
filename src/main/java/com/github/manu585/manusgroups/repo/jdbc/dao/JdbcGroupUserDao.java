@@ -1,7 +1,6 @@
 package com.github.manu585.manusgroups.repo.jdbc.dao;
 
 import com.github.manu585.manusgroups.repo.jdbc.JdbcHelper;
-import com.github.manu585.manusgroups.util.Uuids;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;

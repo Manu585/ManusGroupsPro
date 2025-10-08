@@ -7,7 +7,6 @@ import org.bukkit.block.Sign;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public final class General {
