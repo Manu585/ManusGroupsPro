@@ -39,15 +39,7 @@ public class SignSelectionManager {
         selections.clear();
     }
 
-    private static final class Selection {
-        final UUID target;
-        final long expiresAtMs;
-
-        Selection(UUID target, long expiresAtMs) {
-            this.target = target;
-            this.expiresAtMs = expiresAtMs;
-        }
-
+    private record Selection(UUID target, long expiresAtMs) {
         boolean expired() {
             return Instant.now().toEpochMilli() >= expiresAtMs;
         }

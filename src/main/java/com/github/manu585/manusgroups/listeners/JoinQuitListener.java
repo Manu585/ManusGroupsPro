@@ -20,7 +20,12 @@ public class JoinQuitListener implements Listener {
     private final PrefixService prefixService;
     private final PermissionService permissionService;
 
-    public JoinQuitListener(final JavaPlugin plugin, final GroupService groupService, final PrefixService prefixService, final PermissionService permissionService) {
+    public JoinQuitListener(
+            final JavaPlugin plugin,
+            final GroupService groupService,
+            final PrefixService prefixService,
+            final PermissionService permissionService)
+    {
         this.plugin = plugin;
         this.groupService = groupService;
         this.prefixService = prefixService;
@@ -35,7 +40,7 @@ public class JoinQuitListener implements Listener {
                 .thenCompose(__ -> groupService.load(event.getPlayer().getUniqueId()))
                 // Prime prefix cache
                 .thenCompose(__ -> prefixService.primePrefix(event.getPlayer().getUniqueId()))
-                // Permissions applien
+                // Apply permissions
                 .thenCompose(__ -> permissionService.refreshFor(event.getPlayer().getUniqueId()))
                 // Refresh display name
                 .thenRun(() -> General.runSync(plugin, () -> prefixService.refreshDisplayName(event.getPlayer())

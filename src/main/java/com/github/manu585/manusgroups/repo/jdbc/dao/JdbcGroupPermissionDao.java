@@ -21,8 +21,7 @@ public class JdbcGroupPermissionDao extends JdbcHelper implements GroupPermissio
                 WHERE group_name = ?
                 """;
 
-        List<Map.Entry<String, Boolean>> rows = queryList(SQL,
-                bind(ps -> ps.setString(1, groupName)),
+        List<Map.Entry<String, Boolean>> rows = queryList(SQL, bind(ps -> ps.setString(1, groupName)),
                 rs -> Map.entry(rs.getString("node"), rs.getBoolean("value"))
         );
 
@@ -55,10 +54,12 @@ public class JdbcGroupPermissionDao extends JdbcHelper implements GroupPermissio
     public boolean delete(String groupName, String node) throws SQLException {
         final String SQL = "DELETE FROM `group_permissions` WHERE group_name=? AND node=?";
 
-        int rows = update(SQL, bind(ps -> {
-            ps.setString(1, groupName);
-            ps.setString(2, node);
-        }));
+        int rows = update(SQL, bind(
+                ps -> {
+                    ps.setString(1, groupName);
+                    ps.setString(2, node);
+                })
+        );
 
         return rows > 0;
     }
