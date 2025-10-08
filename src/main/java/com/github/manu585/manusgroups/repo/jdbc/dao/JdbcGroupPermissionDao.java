@@ -15,9 +15,16 @@ public class JdbcGroupPermissionDao extends JdbcHelper implements GroupPermissio
 
     @Override
     public Map<String, Boolean> listByGroup(String groupName) throws SQLException {
-        List<Map.Entry<String, Boolean>> rows = query("""
-                SELECT node, value FROM group_permissions WHERE group_name = ?
-                """, rs -> Map.entry(rs.getString("node"), rs.getBoolean("value")), groupName);
+        final String SQL = """
+                SELECT node, value
+                FROM group_permissions
+                WHERE group_name = ?
+                """;
+
+        List<Map.Entry<String, Boolean>> rows = queryList(SQL,
+                bind(ps -> ps.setString(1, groupName)),
+                rs -> Map.entry(rs.getString("node"), rs.getBoolean("value"))
+        );
 
         Map<String, Boolean> out = new HashMap<>(rows.size());
         for (Map.Entry<String, Boolean> entry : rows) {
@@ -29,15 +36,30 @@ public class JdbcGroupPermissionDao extends JdbcHelper implements GroupPermissio
 
     @Override
     public void upsert(String groupName, String node, boolean value) throws SQLException {
-        update("""
+        final String SQL = """
                 INSERT INTO group_permissions (group_name, node, value)
                 VALUES (?, ?, ?)
                 ON DUPLICATE KEY UPDATE value = VALUES(value)
-                """, groupName, node, value);
+                """;
+
+        update(SQL, bind(
+                ps -> {
+                    ps.setString(1, groupName);
+                    ps.setString(2, node);
+                    ps.setBoolean(3, value);
+                }
+        ));
     }
 
     @Override
     public boolean delete(String groupName, String node) throws SQLException {
-        return update("DELETE FROM group_permissions WHERE group_name=? AND node=?", groupName, node) > 0;
+        final String SQL = "DELETE FROM `group_permissions` WHERE group_name=? AND node=?";
+
+        int rows = update(SQL, bind(ps -> {
+            ps.setString(1, groupName);
+            ps.setString(2, node);
+        }));
+
+        return rows > 0;
     }
 }

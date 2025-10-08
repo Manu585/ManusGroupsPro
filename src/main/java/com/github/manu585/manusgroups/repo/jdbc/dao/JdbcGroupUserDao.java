@@ -14,6 +14,6 @@ public class JdbcGroupUserDao extends JdbcHelper implements GroupUserDao {
 
     @Override
     public void insertIgnore(UUID uuid) throws SQLException {
-        update("INSERT IGNORE INTO `users` (uuid) VALUES (?)", (Object) Uuids.toBytes(uuid));
+        update("INSERT IGNORE INTO `users` (uuid) VALUES (?)", bind(ps -> setUuidBytes(ps, 1, uuid)));
     }
 }

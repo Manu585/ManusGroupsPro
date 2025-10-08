@@ -16,30 +16,52 @@ public class JdbcGroupSignDao extends JdbcHelper implements GroupSignDao{
 
     @Override
     public void upsert(String world, int x, int y, int z, UUID target) throws SQLException {
-        update("""
+        final String SQL = """
                 INSERT INTO `group_signs` (world, x, y, z, target_uuid)
                 VALUES (?, ?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE target_uuid = VALUES(target_uuid)
-                """, world, x, y, z, Uuids.toBytes(target));
+                """;
+
+        update(SQL, bind(ps -> {
+            ps.setString(1, world);
+            ps.setInt(2, x);
+            ps.setInt(3, y);
+            ps.setInt(4, z);
+            setUuidBytes(ps, 5, target);
+        }));
     }
 
     @Override
     public boolean deleteAt(String world, int x, int y, int z) throws SQLException {
-        return update("DELETE FROM `group_signs` WHERE world=? AND x=? AND y=? AND z=?", world, x, y, z) > 0;
+        final String SQL = "DELETE FROM `group_signs` WHERE world=? AND x=? AND y=? AND z=?";
+
+        int rows = update(SQL, bind(ps -> {
+            ps.setString(1, world);
+            ps.setInt(2, x);
+            ps.setInt(3, y);
+            ps.setInt(4, z);
+        }));
+
+        return rows > 0;
     }
 
     @Override
     public List<SignRecord> listByTarget(UUID target) throws SQLException {
-        return query("""
+        final String SQL = """
                 SELECT world, x, y, z, target_uuid
                 FROM `group_signs`
                 WHERE target_uuid=?
-                """, rs -> new SignRecord(
+                """;
+
+        return queryList(SQL,
+                bind(ps -> setUuidBytes(ps, 1, target)),
+                rs -> new SignRecord(
                         rs.getString("world"),
                         rs.getInt("x"),
                         rs.getInt("y"),
                         rs.getInt("z"),
                         Uuids.toUuid(rs.getBytes("target_uuid"))
-        ), (Object) Uuids.toBytes(target));
+                )
+        );
     }
 }
