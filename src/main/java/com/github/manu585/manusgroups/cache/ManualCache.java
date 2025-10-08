@@ -30,10 +30,6 @@ public final class ManualCache<K, V> {
         cache.clear();
     }
 
-    public int size() {
-        return cache.size();
-    }
-
     public @NotNull @UnmodifiableView Map<K, V> snapshot() {
         return Collections.unmodifiableMap(cache);
     }

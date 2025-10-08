@@ -169,6 +169,13 @@ public class ManusGroups extends JavaPlugin {
         prefixCache = new PrefixCache();
     }
 
+    private void clearCaches() {
+        groupCatalogCache.clear();
+        groupPlayerCache.clear();
+        groupPermissionCache.clear();
+        prefixCache.clear();
+    }
+
     private void warmCachesAndFinish(Group defaultGroup) {
         groupRepository.upsertGroup(defaultGroup)
                 // Put all Groups from DB into Cache
@@ -316,6 +323,8 @@ public class ManusGroups extends JavaPlugin {
         if (selectionManager != null) {
             selectionManager.clearAll();
         }
+
+        clearCaches();
 
         HandlerList.unregisterAll();
     }

@@ -51,9 +51,15 @@ public class Commands implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
-        if (args.length == 0) return false;
+        if (args.length == 0) {
+            return false;
+        }
+        
         final BaseCommand sub = commands.get(args[0].toLowerCase(Locale.ROOT));
-        if (sub == null) return false;
+        if (sub == null) {
+            return false;
+        }
+
         sub.execute(sender, Arrays.asList(args).subList(1, args.length));
         return true;
     }
@@ -62,14 +68,13 @@ public class Commands implements CommandExecutor, TabCompleter {
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         if (args.length == 1) {
             String prefix = args[0].toLowerCase(Locale.ROOT);
-            return commands.keySet().stream()
-                    .filter(s -> s.startsWith(prefix))
-                    .sorted()
-                    .toList();
+            return commands.keySet().stream().filter(s -> s.startsWith(prefix)).sorted().toList();
         }
 
         final BaseCommand sub = commands.get(args[0].toLowerCase(Locale.ROOT));
-        if (sub == null) return List.of();
+        if (sub == null) {
+            return List.of();
+        }
 
         return sub.tab(sender, Arrays.asList(args).subList(1, args.length));
     }
