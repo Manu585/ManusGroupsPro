@@ -17,7 +17,7 @@ public class JdbcGroupPermissionDao extends JdbcHelper implements GroupPermissio
     public Map<String, Boolean> listByGroup(String groupName) throws SQLException {
         final String SQL = """
                 SELECT node, value
-                FROM group_permissions
+                FROM `group_permissions`
                 WHERE group_name = ?
                 """;
 
@@ -37,7 +37,7 @@ public class JdbcGroupPermissionDao extends JdbcHelper implements GroupPermissio
     @Override
     public void upsert(String groupName, String node, boolean value) throws SQLException {
         final String SQL = """
-                INSERT INTO group_permissions (group_name, node, value)
+                INSERT INTO `group_permissions` (group_name, node, value)
                 VALUES (?, ?, ?)
                 ON DUPLICATE KEY UPDATE value = VALUES(value)
                 """;
