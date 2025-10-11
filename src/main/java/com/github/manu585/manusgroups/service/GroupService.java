@@ -63,7 +63,7 @@ public class GroupService {
      * Create or update a catalog group, update in memory cache immediately,
      * then refresh online player currently using that group.
      */
-    public CompletableFuture<Void> upsertGroup(Group group) {
+    public CompletableFuture<Void> upsertGroup(final Group group) {
         return repository.upsertGroup(group)
                 .thenRun(() -> catalog.put(group))
                 .thenCompose(__ -> refreshPlayersUsingGroup(group.name()));
@@ -75,7 +75,7 @@ public class GroupService {
      * @param groupName Name of group
      * @param duration Optional duration, if null assignment is permanent
      */
-    public CompletableFuture<Void> setGroup(UUID user, String groupName, @Nullable Duration duration) {
+    public CompletableFuture<Void> setGroup(final UUID user, final String groupName, final @Nullable Duration duration) {
         final Instant expiresAt = toExpiresAt(duration);
 
         return repository.upsertAssignment(user, groupName, expiresAt)
@@ -91,7 +91,7 @@ public class GroupService {
      * Revoke old group -> give player the default group
      * @param user UUID of user to give the group to
      */
-    public CompletableFuture<Void> clearToDefault(UUID user) {
+    public CompletableFuture<Void> clearToDefault(final UUID user) {
         return setGroup(user, DefaultGroup.name(), null).thenRun(() -> expiry.scheduleOrCancel(user, null));
     }
 
@@ -99,11 +99,11 @@ public class GroupService {
      * Load or rebuild a players GroupPlayer snapshot (async)
      * @param user UUID of person to load
      */
-    public CompletableFuture<GroupPlayer> load(UUID user) {
+    public CompletableFuture<GroupPlayer> load(final UUID user) {
         return players.getOrLoad(user);
     }
 
-    public CompletableFuture<Void> ensureDefaultPersisted(UUID user) {
+    public CompletableFuture<Void> ensureDefaultPersisted(final UUID user) {
         return repository.findAssignment(user)
                 .thenCompose(assignment -> {
                     if (assignment != null) {
